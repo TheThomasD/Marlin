@@ -370,6 +370,8 @@
 #define BOARD_ERYONE_ERY32_MINI       4066  // Eryone Ery32 mini (STM32F103VE)
 #define BOARD_PANDA_PI_V29            4067  // Panda Pi V2.9 - Standalone (STM32F103RC)
 
+#define BOARD_GTM32_103_V1            4099  // STM32F103VET6 controller
+
 //
 // ARM Cortex-M4F
 //
