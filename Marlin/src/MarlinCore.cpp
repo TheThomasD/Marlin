@@ -1643,6 +1643,8 @@ void setup() {
     SETUP_RUN(bdl.init(I2C_BD_SDA_PIN, I2C_BD_SCL_PIN, I2C_BD_DELAY));
   #endif
 
+  Serial.end(); // hack for A30T to be able to move axis
+
   marlin_state = MF_RUNNING;
 
   SETUP_LOG("setup() completed.");
