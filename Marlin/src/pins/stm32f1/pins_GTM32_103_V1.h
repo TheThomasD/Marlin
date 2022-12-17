@@ -175,6 +175,7 @@
  * separate devices and can work simultaneously. Unfortunately, Marlin only supports
  * a single SPI Flash device (as of 2019-07-05) so only one is enabled here.
  */
+#define GTM32_PRO_VB_USE_EXT_SDCARD
 #if ENABLED(GTM32_PRO_VB_USE_EXT_SDCARD)
   //
   // SD Card on RepRapDiscount Smart Controller (J2) or on SD_CARD connector

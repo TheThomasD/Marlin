@@ -32,6 +32,10 @@
 
 #if ENABLED(GEEETECH_A30T_TFT)
 
+#ifndef MAX(a, b)
+#define MAX(a, b)  (((a) > (b)) ? (a) : (b))
+#endif
+
 #include "geeetech_a30t.h"
 #include "../ui_api.h"
 #include "../../marlinui.h"
