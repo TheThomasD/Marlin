@@ -8,7 +8,7 @@ if 'offset' in board.get("build").keys():
     marlin.relocate_vtab(board.get('build.offset'))
 
 def output_target():
-    tar_bin = "\"$BUILD_DIR/${PROGNAME}.bin\""
+    tar_bin = "\"update/fmw_tronxy.bin\""
     env.AddPostAction(
         "$BUILD_DIR/${PROGNAME}.elf",
         env.VerboseAction(" ".join([
