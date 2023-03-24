@@ -96,19 +96,17 @@
 #define E1_STEP_PIN                         PB1
 #define E1_DIR_PIN                          PF13
 
-#if NEED_HEAT_HEAD //如果不需要加热喷嘴,disable这一块
 //
 // Temperature Sensors
 //
-  #define TEMP_0_PIN                          PC0   // TH1
-  #define TEMP_1_PIN                          PC3   // TH2                  
+#define TEMP_0_PIN                          PC0   // TH1
+#define TEMP_1_PIN                          PC3   // TH2                  
 
 //
 // Heaters
 //
-  #define HEATER_0_PIN                        PA15 // HEATER1
-  #define HEATER_1_PIN                        PG7  // HEATER2
-#endif
+#define HEATER_0_PIN                        PA15 // HEATER1
+#define HEATER_1_PIN                        PG7  // HEATER2
 
 #define STEP_TIMER                            6
 #define TEMP_TIMER                            14
@@ -121,12 +119,10 @@
 //这里必须复合PeripheralPins.c中的PWM pin定义const PinMap PinMap_PWM[]
 //详见PWM_PIN(x)定义
 #endif
-// #define SERVO0_PIN                            PB10 //使能NUM_SERVOS>1后开放
+#define SERVO0_PIN                            PB10 //使能NUM_SERVOS>1后开放
 
-#if NEED_HEAT_BED
-  #define TEMP_BED_PIN                        PC2 // TB1   
-  #define HEATER_BED_PIN                      PE2 // HOT BED
-#endif
+#define TEMP_BED_PIN                        PC2 // TB1   
+#define HEATER_BED_PIN                      PE2 // HOT BED
 //#define HEATER_BED_INVERTING              true
 
 //
