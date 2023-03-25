@@ -124,12 +124,11 @@
 //
 // Fans
 //
-#define CONTROLLER_FAN_PIN                  PD7   // BOARD FAN
-#define FAN_PIN                             PG6 //FAN0
-#define FAN1_PIN                            PG0 //FAN1
-#define THROAT_FAN                          2
-#define FAN2_PIN                            PF10//FAN2
-#define FAN3_PIN                            PG9 //FAN3
+#define CONTROLLER_FAN_PIN                  PD7 // BOARD FAN
+#define FAN_PIN                             PG6 //FAN0 (part cooler for E0)
+#define FAN1_PIN                            PG0 //FAN1 (part cooler for E0)
+#define FAN2_PIN                            PF10//FAN2 (hotend cooler for E0)
+#define FAN3_PIN                            PG9 //FAN3 (hotend cooler for E1)
 #define FAN_SOFT_PWM
 //
 // Misc
