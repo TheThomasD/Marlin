@@ -1643,6 +1643,9 @@ void setup() {
     SETUP_RUN(bdl.init(I2C_BD_SDA_PIN, I2C_BD_SCL_PIN, I2C_BD_DELAY));
   #endif
 
+  // only report to display (serial 1)
+  TERN_(AUTO_REPORT_POSITION, position_auto_reporter.report_port_mask = SerialMask::from(1));
+
   marlin_state = MF_RUNNING;
 
   SETUP_LOG("setup() completed.");
