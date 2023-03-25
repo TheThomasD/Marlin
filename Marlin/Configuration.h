@@ -563,7 +563,7 @@
 #define HEATER_5_MAXTEMP 275
 #define HEATER_6_MAXTEMP 275
 #define HEATER_7_MAXTEMP 275
-#define BED_MAXTEMP      150
+#define BED_MAXTEMP      110
 #define CHAMBER_MAXTEMP  60
 
 /**
@@ -964,9 +964,9 @@
  *   M204 T    Travel Acceleration
  */
 //#define DEFAULT_ACCELERATION          1000                                                                   // DIGA-Tech: increased value
-#define DEFAULT_ACCELERATION          800     // X, Y, Z and E acceleration for printing moves               // Artillery: default values
+#define DEFAULT_ACCELERATION          500     // X, Y, Z and E acceleration for printing moves               // Artillery: default values
 #define DEFAULT_RETRACT_ACCELERATION  10000   // E acceleration for retracts                                 // DIGA-Tech:
-#define DEFAULT_TRAVEL_ACCELERATION   2000    // X, Y, Z acceleration for travel (non printing) moves        // DIGA-Tech:
+#define DEFAULT_TRAVEL_ACCELERATION   500    // X, Y, Z acceleration for travel (non printing) moves        // DIGA-Tech:
 
 /**
  * Default Jerk limits (mm/s)
@@ -978,8 +978,8 @@
  */
 #define CLASSIC_JERK                                       // DIGA-Tech:
 #if ENABLED(CLASSIC_JERK)
-  #define DEFAULT_XJERK  8.0                               // DIGA-Tech:
-  #define DEFAULT_YJERK  8.0                               // DIGA-Tech:
+  #define DEFAULT_XJERK  10.0                               // DIGA-Tech:
+  #define DEFAULT_YJERK  10.0                               // DIGA-Tech:
   #define DEFAULT_ZJERK  0.3
   //#define DEFAULT_IJERK  0.3
   //#define DEFAULT_JJERK  0.3
@@ -993,7 +993,7 @@
   #endif
 #endif
 
-#define DEFAULT_EJERK    5.0  // May be used by Linear Advance
+#define DEFAULT_EJERK    10.0  // May be used by Linear Advance
 
 /**
  * Junction Deviation Factor
@@ -1181,7 +1181,7 @@
  *     |    [-]    |
  *     O-- FRONT --+
  */
-#define NOZZLE_TO_PROBE_OFFSET { 28.7, 32.5, 2.105 }                 // DIGA-Tech: probe offset
+#define NOZZLE_TO_PROBE_OFFSET { 29, -32, -1.85 }                 // DIGA-Tech: probe offset
 
 // Most probes should stay away from the edges of the bed, but
 // with NOZZLE_AS_PROBE this can be negative for a wider probing area.
