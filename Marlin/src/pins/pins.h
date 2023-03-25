@@ -718,7 +718,7 @@
 #elif MB(TRONXY_V10)
   #include "stm32f4/pins_TRONXY_V10.h"          // STM32F4                                env:STM32F446_tronxy
 #elif MB(TRONXY_F446)
-  #include "stm32f4/pins_TRONXY_F446.h"         //STM32F4                                 env:tronxy_gemini_s_tronxy_ui env:tronxy_gemini_s_marlin_ui
+  #include "stm32f4/pins_TRONXY_F446.h"         //STM32F4                                 env:tronxy_gemini_s_marlin_ui
 
 //
 // ARM Cortex M7

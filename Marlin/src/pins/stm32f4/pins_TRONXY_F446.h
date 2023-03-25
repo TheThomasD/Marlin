@@ -36,11 +36,7 @@
 //
 
 #if NO_EEPROM_SELECTED
-  #if TRONXY_UI
-  #define EEPROM_AT24CXX
-  #else
   #define FLASH_EEPROM_EMULATION
-  #endif
 #endif
 
 #if ENABLED(FLASH_EEPROM_EMULATION)
