@@ -1288,7 +1288,7 @@
 #endif
 
 #if ENABLED(BELTPRINTER) && !defined(HOME_Y_BEFORE_X)
-  #define HOME_Y_BEFORE_X
+  //#define HOME_Y_BEFORE_X
 #endif
 
 #if Z_HOME_TO_MAX && DISABLED(Z_SAFE_HOMING)
