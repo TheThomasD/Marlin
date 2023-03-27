@@ -90,6 +90,17 @@ void GcodeSuite::M290() {
   if (!parser.seen(STR_AXES_MAIN) || parser.seen('R')) {
     SERIAL_ECHO_START();
 
+    if (1 == parser.intval('R')) {
+      SERIAL_ECHOLNPGM("Resetting babysteps");
+      babystep.steps[X_AXIS] = 0;
+      babystep.steps[Y_AXIS] = 0;
+      babystep.steps[Z_AXIS] = 0;
+      babystep.accum = 0;
+      babystep.axis_total[X_AXIS] = 0;
+      babystep.axis_total[Y_AXIS] = 0;
+      babystep.axis_total[Z_AXIS] = 0;
+    }
+
     #if ENABLED(BABYSTEP_ZPROBE_OFFSET)
       SERIAL_ECHOLNPGM(STR_PROBE_OFFSET " " STR_Z, probe.offset.z);
     #endif
