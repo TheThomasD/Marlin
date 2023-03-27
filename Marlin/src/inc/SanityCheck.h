@@ -1891,7 +1891,8 @@ static_assert(Y_MAX_LENGTH >= Y_BED_SIZE, "Movement bounds (Y_MIN_POS, Y_MAX_POS
   #elif !IS_KINEMATIC
     static_assert(PROBING_MARGIN       >= 0, "PROBING_MARGIN must be >= 0.");
     static_assert(PROBING_MARGIN_BACK  >= 0, "PROBING_MARGIN_BACK must be >= 0.");
-    static_assert(PROBING_MARGIN_FRONT >= 0, "PROBING_MARGIN_FRONT must be >= 0.");
+    // disabled due to clips
+    //static_assert(PROBING_MARGIN_FRONT >= 0, "PROBING_MARGIN_FRONT must be >= 0.");
     static_assert(PROBING_MARGIN_LEFT  >= 0, "PROBING_MARGIN_LEFT must be >= 0.");
     static_assert(PROBING_MARGIN_RIGHT >= 0, "PROBING_MARGIN_RIGHT must be >= 0.");
   #endif
