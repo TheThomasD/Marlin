@@ -668,9 +668,9 @@
     #define DEFAULT_Kd_LIST {  68.33,  68.33 }
   #else
     // Creality 3DPrintMill U-shaped cooling duct and 100% fan tuned at 220c
-    #define DEFAULT_Kp  24.19
-    #define DEFAULT_Ki   2.14
-    #define DEFAULT_Kd  68.33
+    #define DEFAULT_Kp  21.70
+    #define DEFAULT_Ki   2.17
+    #define DEFAULT_Kd  54.13
   #endif
 #endif
 
@@ -752,9 +752,9 @@
   //#define PID_BED_DEBUG // Print Bed PID debug data to the serial port.
 
   // 24V 3mm Aluminium 5mm glass plate (3DPrintMill) tuned at 55c
-  #define DEFAULT_bedKp  49.06
-  #define DEFAULT_bedKi   8.87
-  #define DEFAULT_bedKd 180.88
+  #define DEFAULT_bedKp  67.57
+  #define DEFAULT_bedKi  10.05
+  #define DEFAULT_bedKd 303.75
 
   // FIND YOUR OWN: "M303 E-1 C8 S90" to run autotune on the bed at 90 degreesC for 8 cycles.
 #endif // PIDTEMPBED
@@ -1168,7 +1168,7 @@
  * Override with M92
  *                                      X, Y, Z [, I [, J [, K...]]], E0 [, E1[, E2...]]
  */
-#define DEFAULT_AXIS_STEPS_PER_UNIT   { 80, 80, 1148.4, 137.65 }
+#define DEFAULT_AXIS_STEPS_PER_UNIT   { 80, 80, 1163, 137.65 }
 
 /**
  * Default Max Feed Rate (linear=mm/s, rotational=°/s)
@@ -1188,7 +1188,7 @@
  * Override with M201
  *                                      X, Y, Z [, I [, J [, K...]]], E0 [, E1[, E2...]]
  */
-#define DEFAULT_MAX_ACCELERATION      { 1500, 1500, 100, 1000 }
+#define DEFAULT_MAX_ACCELERATION      { 300, 300, 100, 5000 }
 
 //#define LIMITED_MAX_ACCEL_EDITING     // Limit edit via M201 or LCD to DEFAULT_MAX_ACCELERATION * 2
 #if ENABLED(LIMITED_MAX_ACCEL_EDITING)
@@ -1203,9 +1203,9 @@
  *   M204 R    Retract Acceleration
  *   M204 T    Travel Acceleration
  */
-#define DEFAULT_ACCELERATION          1500    // X, Y, Z and E acceleration for printing moves
-#define DEFAULT_RETRACT_ACCELERATION  1000    // E acceleration for retracts
-#define DEFAULT_TRAVEL_ACCELERATION   1500    // X, Y, Z acceleration for travel (non printing) moves
+#define DEFAULT_ACCELERATION          4000    // X, Y, Z and E acceleration for printing moves
+#define DEFAULT_RETRACT_ACCELERATION  300    // E acceleration for retracts
+#define DEFAULT_TRAVEL_ACCELERATION   4000    // X, Y, Z acceleration for travel (non printing) moves
 
 /**
  * Default Jerk limits (mm/s)
