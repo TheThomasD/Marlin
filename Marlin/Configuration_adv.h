@@ -786,7 +786,7 @@
   #define DEFAULT_DUAL_X_CARRIAGE_MODE DXC_AUTO_PARK_MODE
 
   // Default x offset in duplication mode (typically set to half print bed width)
-  #define DEFAULT_DUPLICATION_X_OFFSET 150
+  #define DEFAULT_DUPLICATION_X_OFFSET (X_BED_SIZE / 2.0)
 
   // Default action to execute following M605 mode change commands. Typically G28X to apply new mode.
   #define EVENT_GCODE_IDEX_AFTER_MODECHANGE "G28 X"
