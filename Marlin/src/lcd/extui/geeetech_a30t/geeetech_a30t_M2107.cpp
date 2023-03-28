@@ -97,9 +97,9 @@ namespace Geeetech
 
     void TouchDisplay::moveToXYWithZHop(const float_t &xPos, const float_t &yPos)
     {
-        do_blocking_move_to_z(MANUAL_LEVELING_MOVE_Z_HOP);
+        do_blocking_move_to_z(MANUAL_LEVELING_MOVE_Z_HOP, 800);
         do_blocking_move_to_xy(xPos, yPos);
-        do_blocking_move_to_z(0.0 - home_offset.z);
+        do_blocking_move_to_z(0.0 - home_offset.z, 800);
         sendToDisplay("M2107 ok");
     }
 
