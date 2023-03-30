@@ -98,6 +98,7 @@
   #if ENABLED(BABYSTEP_XY)
     void _lcd_babystep_x() { _lcd_babystep(X_AXIS, GET_TEXT_F(MSG_BABYSTEP_X)); }
     void _lcd_babystep_y() { _lcd_babystep(Y_AXIS, GET_TEXT_F(MSG_BABYSTEP_Y)); }
+    void lcd_babystep_y()  { _lcd_babystep_go(_lcd_babystep_y); }
   #endif
 
   #if DISABLED(BABYSTEP_ZPROBE_OFFSET)

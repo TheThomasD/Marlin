@@ -240,6 +240,7 @@ void _lcd_draw_homing();
     void lcd_babystep_zoffset();
   #else
     void lcd_babystep_z();
+    void lcd_babystep_y();
   #endif
 
   #if ENABLED(BABYSTEP_MILLIMETER_UNITS)

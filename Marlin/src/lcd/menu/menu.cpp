@@ -177,7 +177,7 @@ void MarlinUI::goto_screen(screenFunc_t screen, const uint16_t encoder/*=0*/, co
 
     TERN_(SET_PROGRESS_PERCENT, progress_reset());
 
-    #if BOTH(DOUBLECLICK_FOR_Z_BABYSTEPPING, BABYSTEPPING)
+    #if BOTH(DOUBLECLICK_FOR_Y_BABYSTEPPING, BABYSTEPPING)
       static millis_t doubleclick_expire_ms = 0;
       // Going to menu_main from status screen? Remember first click time.
       // Going back to status screen within a very short time? Go to Z babystepping.
@@ -187,7 +187,7 @@ void MarlinUI::goto_screen(screenFunc_t screen, const uint16_t encoder/*=0*/, co
       }
       else if (screen == status_screen && currentScreen == menu_main && PENDING(millis(), doubleclick_expire_ms)) {
         if (BABYSTEP_ALLOWED())
-          screen = TERN(BABYSTEP_ZPROBE_OFFSET, lcd_babystep_zoffset, lcd_babystep_z);
+          screen = TERN(BABYSTEP_ZPROBE_OFFSET, lcd_babystep_zoffset, lcd_babystep_y);
         else {
           #if ENABLED(MOVE_Z_WHEN_IDLE)
             ui.manual_move.menu_scale = MOVE_Z_IDLE_MULTIPLICATOR;
