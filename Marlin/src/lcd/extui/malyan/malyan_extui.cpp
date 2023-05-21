@@ -123,8 +123,8 @@ namespace ExtUI {
 
   #endif
 
-  void onPrintTimerStarted() { wasStarted = true; write_to_lcd(F("{SYS:STARTED}")); write_to_lcd(F("{SYS:BUILD}")); }
-  void onPrintTimerPaused() { write_to_lcd(F("{SYS:PAUSE}")); write_to_lcd(F("{SYS:PAUSED}"));}
+  void onPrintTimerStarted() { wasStarted = true; write_to_lcd(F("{SYS:STARTED}{SYS:BUILD}")); }
+  void onPrintTimerPaused() { write_to_lcd(F("{SYS:PAUSE}{SYS:PAUSED}"));}
   void onPrintTimerStopped() { if (wasStarted) write_to_lcd(F("{TQ:100}")); wasStarted = false; }
 
   // Not needed for Malyan LCD

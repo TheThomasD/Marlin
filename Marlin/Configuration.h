@@ -760,9 +760,9 @@
   //#define DEFAULT_bedKd 295.34
 
   // Malyan M200
-  #define DEFAULT_bedKp 15.97
-  #define DEFAULT_bedKi 2.63
-  #define DEFAULT_bedKd 64.71
+  #define DEFAULT_bedKp 25.73
+  #define DEFAULT_bedKi 3.97
+  #define DEFAULT_bedKd 111.17
 
   // FIND YOUR OWN: "M303 E-1 C8 S90" to run autotune on the bed at 90 degreesC for 8 cycles.
 #endif // PIDTEMPBED
@@ -1961,7 +1961,7 @@
 #if EITHER(AUTO_BED_LEVELING_LINEAR, AUTO_BED_LEVELING_BILINEAR)
 
   // Set the number of grid points per dimension.
-  #define GRID_MAX_POINTS_X 5
+  #define GRID_MAX_POINTS_X 7
   #define GRID_MAX_POINTS_Y GRID_MAX_POINTS_X
 
   // Probe along the Y axis, advancing X after each column

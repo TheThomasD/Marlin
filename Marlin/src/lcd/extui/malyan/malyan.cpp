@@ -146,7 +146,11 @@ void process_lcd_c_command(const char *command) {
       break;
 
     #if HAS_HEATED_BED
-      case 'P': ExtUI::setTargetTemp_celsius(target_val, ExtUI::heater_t::BED); break;
+      case 'P':
+        // see comment above...
+        if (!print_job_timer.isRunning() || target_val > 0)
+          ExtUI::setTargetTemp_celsius(target_val, ExtUI::heater_t::BED);
+        break;
     #endif
 
     default: DEBUG_ECHOLNPGM("UNKNOWN C COMMAND ", command);
@@ -216,7 +220,8 @@ void process_lcd_j_command(const char *command) {
       if (thermalManager.temp_hotend->celsius >= EXTRUDE_MINTEMP) {
         j_move_axis<ExtUI::extruder_t>(command, ExtUI::extruder_t::E0);
       } else {
-        //set_lcd_error(F("Hotend too cold!")); // max 24 chars; cannot press OK, so not sending :(
+        //write_to_lcd(F("{SYS:STARTED}")); // go to main screen (otherwise cannot go back from message screen)
+        //set_lcd_error(F("Hotend too cold!")); // max 24 chars; note displayed correctly :(
         SERIAL_ECHOLN(PSTR("Cold extrusion prevented, hotend too cold!"));
       }
       break;
@@ -422,6 +427,8 @@ void parse_lcd_byte(const byte b) {
     ) {
       inbound_buffer[inbound_count] = '\0';     // Reset before processing
       inbound_count = 0;                        // Reset buffer index
+      SERIAL_ECHO(PSTR("Received display command: "));
+      SERIAL_ECHOLN(inbound_buffer);
       if (parsing == 1)
         process_lcd_command(inbound_buffer);    // Handle the LCD command
       else
