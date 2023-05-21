@@ -53,9 +53,10 @@
 //
 // Limit Switches
 //
-#define X_STOP_PIN                          PB4
-#define Y_STOP_PIN                          PA15
-#define Z_STOP_PIN                          PB5
+#define X_MIN_PIN                           PB4
+#define Y_MIN_PIN                           PA15
+#define Z_MIN_PIN                           PB5
+//#define Z_MAX_PIN                           PA11 //unfortunately also used by "sd card present"
 
 //
 // Steppers

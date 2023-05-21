@@ -33,6 +33,9 @@ extern uint16_t inbound_count;
 // For sending print completion messages
 extern bool last_printing_status;
 
+extern bool homingFromDisplay;
+extern bool levelingFromDisplay;
+
 void write_to_lcd(FSTR_P const fmsg);
 void write_to_lcd(const char * const cmsg);
 
@@ -45,9 +48,11 @@ template<typename T>
 void j_move_axis(const char *command, const T axis);
 
 void process_lcd_j_command(const char *command);
+void process_lcd_m_command(const char *command);
 void process_lcd_p_command(const char *command);
 void process_lcd_s_command(const char *command);
 void process_lcd_command(const char *command);
 
 void parse_lcd_byte(const byte b);
 void update_usb_status(const bool forceUpdate);
+void update_endstop_status(const bool forceWrite);

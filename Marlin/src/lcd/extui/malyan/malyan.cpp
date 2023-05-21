@@ -58,6 +58,8 @@
 #include "../../../libs/duration_t.h"
 #include "../../../module/printcounter.h"
 #include "../../../gcode/queue.h"
+#include "../../../module/probe.h"
+#include "../../../module/settings.h"
 
 #define DEBUG_OUT ENABLED(DEBUG_MALYAN_LCD)
 #include "../../../core/debug_out.h"
@@ -72,6 +74,9 @@ uint16_t inbound_count;
 
 // For sending print completion messages
 bool last_printing_status = false;
+
+bool homingFromDisplay = false;
+bool levelingFromDisplay = false;
 
 // Everything written needs the high bit set.
 void write_to_lcd(FSTR_P const fmsg) {
@@ -165,12 +170,10 @@ void process_lcd_eb_command(const char *command) {
       sprintf_P(elapsed_buffer, PSTR("%02u%02u%02u"), uint16_t(elapsed.hour()), uint16_t(elapsed.minute()) % 60, uint16_t(elapsed.second()) % 60);
 
       char message_buffer[MAX_CURLY_COMMAND];
-      uint8_t done_pct = print_job_timer.isRunning() ? (iteration * 10) : 100;
-      iteration = (iteration + 1) % 10; // Provide progress animation
-      #if ENABLED(SDSUPPORT)
-        if (ExtUI::isPrintingFromMedia() || ExtUI::isPrintingFromMediaPaused())
-          done_pct = card.percentDone();
-      #endif
+      uint8_t done_pct = ExtUI::getProgress_percent();
+      // Provide progress animation if progress is not set manually or coming from card printing
+      if (done_pct == 0) done_pct = print_job_timer.isRunning() ? (iteration * 10) : 100 + 1;
+      iteration = (iteration + 1) % 10; 
 
       sprintf_P(message_buffer,
         PSTR("{T0:%03i/%03i}{T1:000/000}{TP:%03i/%03i}{TQ:%03i}{TT:%s}"),
@@ -209,7 +212,13 @@ void j_move_axis(const char *command, const T axis) {
 void process_lcd_j_command(const char *command) {
   switch (command[0]) {
     case 'E': break;
-    case 'A': j_move_axis<ExtUI::extruder_t>(command, ExtUI::extruder_t::E0); break;
+    case 'A':
+      if (thermalManager.temp_hotend->celsius >= EXTRUDE_MINTEMP)
+        j_move_axis<ExtUI::extruder_t>(command, ExtUI::extruder_t::E0);
+      else
+        //write_to_lcd(F("{E:Cold extrusion prevented, hotend too cold!}")); // cannot press OK on touch display
+        SERIAL_ECHOLN(PSTR("Cold extrusion prevented, hotend too cold!"));
+      break;
     case 'Y': j_move_axis<ExtUI::axis_t>(command, ExtUI::axis_t::Y); break;
     case 'Z': j_move_axis<ExtUI::axis_t>(command, ExtUI::axis_t::Z); break;
     case 'X': j_move_axis<ExtUI::axis_t>(command, ExtUI::axis_t::X); break;
@@ -255,7 +264,13 @@ void process_lcd_p_command(const char *command) {
         ExtUI::stopPrint();
         write_to_lcd(F("{SYS:STARTED}"));
         break;
-    case 'H': queue.enqueue_now_P(G28_STR); break; // Home all axes
+    case 'H': homingFromDisplay = true;
+              queue.enqueue_now_P(G28_STR);
+              break; // Home all axes
+    case 'I': levelingFromDisplay = true;
+              queue.enqueue_now_P(G28_STR); // Home all axes
+              queue.enqueue_now_P("G29 V4"); // do bed leveling
+              break; 
     default: {
       #if ENABLED(SDSUPPORT)
         // Print file 000 - a three digit number indicating which
@@ -290,6 +305,9 @@ void process_lcd_p_command(const char *command) {
  * Handle an lcd 'S' command
  * {S:I} - Temperature request
  * {T0:999/000}{T1:000/000}{TP:004/000}
+ * 
+ * {S:S} - Endstop status request
+ * {TS:xyz} (uppercase for triggered endstops)
  *
  * {S:L} - File Listing request
  * Printer Response:
@@ -337,7 +355,23 @@ void process_lcd_s_command(const char *command) {
       #endif
     } break;
 
+    case 'S':
+      update_endstop_status(true);
+      char offset[10];
+      sprintf_P(offset, PSTR("{M:%03i}\r\n"), (uint8_t) (-probe.offset.z * 100));
+      write_to_lcd(offset);
+      break;
+
     default: DEBUG_ECHOLNPGM("UNKNOWN S COMMAND ", command);
+  }
+}
+
+void process_lcd_m_command(const char *command) {
+  float_t number = -atoi(command) / 100.0;
+  if (number >= Z_PROBE_OFFSET_RANGE_MIN) {
+    probe.offset.z = number;
+    settings.save();
+    queue.enqueue_now_P("M851");
   }
 }
 
@@ -361,6 +395,7 @@ void process_lcd_command(const char *command) {
       case 'C': process_lcd_c_command(current); break;
       case 'B':
       case 'E': process_lcd_eb_command(current); break;
+      case 'M': process_lcd_m_command(current); break;
       default: DEBUG_ECHOLNPGM("UNKNOWN COMMAND ", command);
     }
   }
@@ -415,6 +450,29 @@ void update_usb_status(const bool forceUpdate) {
   if (last_usb_connected_status != MYSERIAL1.connected() || forceUpdate) {
     last_usb_connected_status = MYSERIAL1.connected();
     write_to_lcd(last_usb_connected_status ? F("{R:UC}\r\n") : F("{R:UD}\r\n"));
+  }
+}
+
+void update_endstop_status(const bool forceWrite) {
+  static bool xOld = false;
+  static bool yOld = false;
+  static bool zOld = false;
+  static bool xNew;
+  static bool yNew;
+  static bool zNew;
+  xNew = READ(X_MIN_PIN) != X_MIN_ENDSTOP_INVERTING;
+  yNew = READ(Y_MIN_PIN) != Y_MIN_ENDSTOP_INVERTING;
+  zNew = READ(Z_MIN_PIN) != Z_MIN_ENDSTOP_INVERTING;
+  if (forceWrite || xOld != xNew || yOld != yNew || zOld != zNew) {
+    xOld = xNew;
+    yOld = yNew;
+    zOld = zNew;
+    char state[11];
+    sprintf_P(state, PSTR("{TS:%s%s%s}\r\n"),
+      xNew ? PSTR("X") : PSTR("x"),
+      yNew ? PSTR("Y") : PSTR("y"),
+      zNew ? PSTR("Z") : PSTR("z"));
+    write_to_lcd(state);
   }
 }
 

@@ -1,3 +1,13 @@
+<h1 align="center">Monoprice Select Mini Pro</h1>
+<ul>
+  <li>uses 5x5 points ABL</li>
+  <li>build and copy "firmware.bin" to sd card. Then, copy the same file as "fcupdate.flg" to the card again.</li>
+  <li>switch off the printer, insert SD card, switch on again - wait for the update to finish (version number is displayed on screen)</li>
+  <li>remove card and delete added files to avoid reflashing</li>
+  <li>additional z-endstop is not used as an inserted SD card also triggeres the same pin</li>
+  <li>use at your own risk</li>
+</ul>
+
 <p align="center"><img src="buildroot/share/pixmaps/logo/marlin-outrun-nf-500.png" height="250" alt="MarlinFirmware's logo" /></p>
 
 <h1 align="center">Marlin 3D Printer Firmware</h1>

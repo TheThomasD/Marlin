@@ -31,16 +31,9 @@
 #include "../ui_api.h"
 #include "malyan.h"
 
-//#include "../../marlinui.h"
-//#include "../../../sd/cardreader.h"
-//#include "../../../module/temperature.h"
-//#include "../../../module/stepper.h"
-//#include "../../../module/motion.h"
-//#include "../../../libs/duration_t.h"
-//#include "../../../module/printcounter.h"
-//#include "../../../gcode/queue.h"
-
 namespace ExtUI {
+  bool wasStarted = false;
+
   void onStartup() {
     /**
      * The Malyan LCD actually runs as a separate MCU on Serial 1.
@@ -73,6 +66,8 @@ namespace ExtUI {
 
     // First report USB status.
     update_usb_status(false);
+
+    update_endstop_status(false);
 
     // now drain commands...
     while (LCD_SERIAL.available())
@@ -128,9 +123,9 @@ namespace ExtUI {
 
   #endif
 
-  void onPrintTimerStarted() { write_to_lcd(F("{SYS:BUILD}")); }
-  void onPrintTimerPaused() {}
-  void onPrintTimerStopped() { write_to_lcd(F("{TQ:100}")); }
+  void onPrintTimerStarted() { wasStarted = true; write_to_lcd(F("{SYS:STARTED}")); write_to_lcd(F("{SYS:BUILD}")); }
+  void onPrintTimerPaused() { write_to_lcd(F("{SYS:PAUSE}")); write_to_lcd(F("{SYS:PAUSED}"));}
+  void onPrintTimerStopped() { if (wasStarted) write_to_lcd(F("{TQ:100}")); wasStarted = false; }
 
   // Not needed for Malyan LCD
   void onStatusChanged(const char * const) {}
@@ -141,7 +136,10 @@ namespace ExtUI {
   void onFilamentRunout(const extruder_t extruder) {}
   void onUserConfirmRequired(const char * const) {}
   void onHomingStart() {}
-  void onHomingDone() {}
+  void onHomingDone() { if (homingFromDisplay)
+                          write_to_lcd(F("{TQ:100}"));
+                        homingFromDisplay = false;
+                      }
   void onPrintDone() {}
   void onFactoryReset() {}
   void onStoreSettings(char*) {}
@@ -152,7 +150,10 @@ namespace ExtUI {
 
   #if HAS_MESH
     void onLevelingStart() {}
-    void onLevelingDone() {}
+    void onLevelingDone() { if (levelingFromDisplay)
+                              write_to_lcd(F("{TQ:100}"));
+                            levelingFromDisplay = false;
+                          }
     void onMeshUpdate(const int8_t xpos, const int8_t ypos, const_float_t zval) {}
     void onMeshUpdate(const int8_t xpos, const int8_t ypos, const ExtUI::probe_state_t state) {}
   #endif
