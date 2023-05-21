@@ -213,11 +213,12 @@ void process_lcd_j_command(const char *command) {
   switch (command[0]) {
     case 'E': break;
     case 'A':
-      if (thermalManager.temp_hotend->celsius >= EXTRUDE_MINTEMP)
+      if (thermalManager.temp_hotend->celsius >= EXTRUDE_MINTEMP) {
         j_move_axis<ExtUI::extruder_t>(command, ExtUI::extruder_t::E0);
-      else
-        //write_to_lcd(F("{E:Cold extrusion prevented, hotend too cold!}")); // cannot press OK on touch display
+      } else {
+        //set_lcd_error(F("Hotend too cold!")); // max 24 chars; cannot press OK, so not sending :(
         SERIAL_ECHOLN(PSTR("Cold extrusion prevented, hotend too cold!"));
+      }
       break;
     case 'Y': j_move_axis<ExtUI::axis_t>(command, ExtUI::axis_t::Y); break;
     case 'Z': j_move_axis<ExtUI::axis_t>(command, ExtUI::axis_t::Z); break;
