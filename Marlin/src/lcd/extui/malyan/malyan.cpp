@@ -60,6 +60,7 @@
 #include "../../../gcode/queue.h"
 #include "../../../module/probe.h"
 #include "../../../module/settings.h"
+#include "../../../feature/babystep.h"
 
 #define DEBUG_OUT ENABLED(DEBUG_MALYAN_LCD)
 #include "../../../core/debug_out.h"
@@ -77,6 +78,7 @@ bool last_printing_status = false;
 
 bool homingFromDisplay = false;
 bool levelingFromDisplay = false;
+bool saveNeeded = false;
 
 // Everything written needs the high bit set.
 void write_to_lcd(FSTR_P const fmsg) {
@@ -363,9 +365,8 @@ void process_lcd_s_command(const char *command) {
 
     case 'S':
       update_endstop_status(true);
-      char offset[10];
-      sprintf_P(offset, PSTR("{M:%03i}\r\n"), (uint8_t) (-probe.offset.z * 100));
-      write_to_lcd(offset);
+      update_z_offset(false);
+      if (saveNeeded) settings.save();
       break;
 
     default: DEBUG_ECHOLNPGM("UNKNOWN S COMMAND ", command);
@@ -373,11 +374,18 @@ void process_lcd_s_command(const char *command) {
 }
 
 void process_lcd_m_command(const char *command) {
+  static float_t oldOffset = probe.offset.z;
   float_t number = -atoi(command) / 100.0;
-  if (number >= Z_PROBE_OFFSET_RANGE_MIN) {
-    probe.offset.z = number;
-    settings.save();
-    queue.enqueue_now_P("M851");
+  if (number >= Z_PROBE_OFFSET_RANGE_MIN && number != oldOffset) {
+    if (ExtUI::isPrinting()) {
+      float_t offset = -(oldOffset - number);
+      babystep.add_mm(Z_AXIS, offset);
+      probe.offset.z += offset;
+    } else {
+      probe.offset.z = number;
+    }
+    oldOffset = probe.offset.z;
+    saveNeeded = true;
   }
 }
 
@@ -427,8 +435,8 @@ void parse_lcd_byte(const byte b) {
     ) {
       inbound_buffer[inbound_count] = '\0';     // Reset before processing
       inbound_count = 0;                        // Reset buffer index
-      SERIAL_ECHO(PSTR("Received display command: "));
-      SERIAL_ECHOLN(inbound_buffer);
+      //SERIAL_ECHO(PSTR("Received display command: "));
+      //SERIAL_ECHOLN(inbound_buffer);
       if (parsing == 1)
         process_lcd_command(inbound_buffer);    // Handle the LCD command
       else
@@ -481,6 +489,18 @@ void update_endstop_status(const bool forceWrite) {
       yNew ? PSTR("Y") : PSTR("y"),
       zNew ? PSTR("Z") : PSTR("z"));
     write_to_lcd(state);
+  }
+}
+
+void update_z_offset(const bool forceWrite) {
+  static float_t oldZOffset = -probe.offset.z * 100;
+
+  if (forceWrite || -probe.offset.z * 100 != oldZOffset)
+  {
+    oldZOffset = -probe.offset.z * 100;
+    char offset[10];
+    sprintf_P(offset, PSTR("{M:%03i}\r\n"), (uint8_t) (-probe.offset.z * 100));
+    write_to_lcd(offset);
   }
 }
 

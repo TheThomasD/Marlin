@@ -56,3 +56,4 @@ void process_lcd_command(const char *command);
 void parse_lcd_byte(const byte b);
 void update_usb_status(const bool forceUpdate);
 void update_endstop_status(const bool forceWrite);
+void update_z_offset(const bool forceWrite);

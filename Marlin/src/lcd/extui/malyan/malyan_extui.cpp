@@ -56,6 +56,7 @@ namespace ExtUI {
     // No idea why it does this twice.
     write_to_lcd(F("{SYS:STARTED}\r\n"));
     update_usb_status(true);
+    update_z_offset(true);
   }
 
   void onIdle() {
@@ -68,6 +69,8 @@ namespace ExtUI {
     update_usb_status(false);
 
     update_endstop_status(false);
+
+    update_z_offset(false);
 
     // now drain commands...
     while (LCD_SERIAL.available())
@@ -84,7 +87,7 @@ namespace ExtUI {
       // issue a percent of 0.
       const uint8_t percent_done = (ExtUI::isPrinting() || ExtUI::isPrintingFromMediaPaused()) ? ExtUI::getProgress_percent() : last_printing_status ? 100 : 0;
       if (percent_done != last_percent_done) {
-        char message_buffer[16];
+        char message_buffer[9];
         sprintf_P(message_buffer, PSTR("{TQ:%03i}"), percent_done);
         write_to_lcd(message_buffer);
         last_percent_done = percent_done;
@@ -125,7 +128,7 @@ namespace ExtUI {
 
   void onPrintTimerStarted() { wasStarted = true; write_to_lcd(F("{SYS:STARTED}{SYS:BUILD}")); }
   void onPrintTimerPaused() { write_to_lcd(F("{SYS:PAUSE}{SYS:PAUSED}"));}
-  void onPrintTimerStopped() { if (wasStarted) write_to_lcd(F("{TQ:100}")); wasStarted = false; }
+  void onPrintTimerStopped() { if (wasStarted) write_to_lcd(F("{TQ:100}{SYS:STARTED}")); wasStarted = false; }
 
   // Not needed for Malyan LCD
   void onStatusChanged(const char * const) {}
