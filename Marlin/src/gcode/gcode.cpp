@@ -69,6 +69,10 @@ GcodeSuite gcode;
   #include "../feature/fancheck.h"
 #endif
 
+#if ENABLED(MALYAN_LCD)
+  #include "../lcd/extui/malyan/malyan.h"
+#endif
+
 #include "../MarlinCore.h" // for idle, kill
 
 // Inactivity shutdown
@@ -1095,6 +1099,10 @@ void GcodeSuite::process_parsed_command(const bool no_ok/*=false*/) {
 
       #if ENABLED(HAS_MCP3426_ADC)
         case 3426: M3426(); break;                                // M3426: Read MCP3426 ADC (over i2c)
+      #endif
+
+      #if ENABLED(MALYAN_LCD)
+        case 5000: process_M5000(); break;
       #endif
 
       default: parser.unknown_command_warning(); break;

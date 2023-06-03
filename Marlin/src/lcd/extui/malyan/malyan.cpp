@@ -61,6 +61,7 @@
 #include "../../../module/probe.h"
 #include "../../../module/settings.h"
 #include "../../../feature/babystep.h"
+#include "../../../gcode/gcode.h"
 
 #define DEBUG_OUT ENABLED(DEBUG_MALYAN_LCD)
 #include "../../../core/debug_out.h"
@@ -373,6 +374,26 @@ void process_lcd_s_command(const char *command) {
   }
 }
 
+void process_lcd_r_command(const char *command) {
+  switch (command[0]) {
+    case 'I': {
+      SERIAL_ECHO("IP Address: ");
+      SERIAL_ECHOLN(++++command /*skip I:*/);
+    } break;
+
+    case 'C': {
+      SERIAL_ECHO("WiFi ");
+      switch (command[2] /*skip C:*/) {
+        case 'C': SERIAL_ECHOLN("connected"); break;
+        case 'D': SERIAL_ECHOLN("disconnected"); break;
+        default: DEBUG_ECHOLNPGM("UNKNOWN R COMMAND ", command);
+      }
+    } break;
+
+    default: DEBUG_ECHOLNPGM("UNKNOWN R COMMAND ", command);
+  }
+}
+
 void process_lcd_m_command(const char *command) {
   static float_t oldOffset = probe.offset.z;
   float_t number = -atoi(command) / 100.0;
@@ -398,8 +419,9 @@ void process_lcd_command(const char *command) {
   const char *current = command;
 
   byte command_code = *current++;
-  if (*current == ':') {
-
+  if (command_code == 'R') {
+    process_lcd_r_command(current);
+  } else if (*current == ':') {
     current++; // skip the :
 
     switch (command_code) {
@@ -501,6 +523,17 @@ void update_z_offset(const bool forceWrite) {
     char offset[10];
     sprintf_P(offset, PSTR("{M:%03i}\r\n"), (uint8_t) (-probe.offset.z * 100));
     write_to_lcd(offset);
+  }
+}
+
+void process_M5000() {
+  if (!!parser.string_arg) {
+    char* command = parser.string_arg;
+    SERIAL_ECHO("Sending to display: ");
+    SERIAL_ECHOLN(command);
+    write_to_lcd(command);
+  } else {
+    SERIAL_ECHOLN("{WC:} wifi smart config\n{WS:<SSID>}\n{WP:<password>}\n{R:R} reset display\n{R:A} request all status\n{R:I} request IP address\n{R:C} request connection status");
   }
 }
 
