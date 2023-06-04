@@ -55,7 +55,6 @@ namespace ExtUI {
 
     // No idea why it does this twice.
     write_to_lcd(F("{SYS:STARTED}\r\n"));
-    update_usb_status(true);
     update_z_offset(true);
   }
 
@@ -66,7 +65,6 @@ namespace ExtUI {
      */
 
     // First report USB status.
-    update_usb_status(false);
 
     update_endstop_status(false);
 

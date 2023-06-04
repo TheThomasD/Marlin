@@ -1180,6 +1180,11 @@ void setup() {
       while (!MYSERIAL3.connected() && PENDING(millis(), serial_connect_timeout)) { /*nada*/ }
     #endif
   #endif
+  // UI must be initialized before EEPROM
+  // (because EEPROM code calls the UI).
+
+  SETUP_RUN(ui.init());
+
   SERIAL_ECHOLNPGM("start");
 
   // Set up these pins early to prevent suicide
@@ -1310,11 +1315,6 @@ void setup() {
   #endif
 
   TERN_(HAS_FANCHECK, fan_check.init());
-
-  // UI must be initialized before EEPROM
-  // (because EEPROM code calls the UI).
-
-  SETUP_RUN(ui.init());
 
   #if PIN_EXISTS(SAFE_POWER)
     #if HAS_DRIVER_SAFE_POWER_PROTECT

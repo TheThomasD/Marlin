@@ -453,7 +453,7 @@ void parse_lcd_byte(const byte b) {
   if (parsing) {
     const bool is_lcd = parsing == 1;           // 1 for LCD
     if ( ( is_lcd && c == '}')                  // Closing brace on LCD command
-      || (!is_lcd && c == '\n')                 // LF on a G-code command
+      || (!is_lcd && b == '\n')                 // LF on a G-code command
     ) {
       inbound_buffer[inbound_count] = '\0';     // Reset before processing
       inbound_count = 0;                        // Reset buffer index
@@ -462,32 +462,15 @@ void parse_lcd_byte(const byte b) {
       if (parsing == 1)
         process_lcd_command(inbound_buffer);    // Handle the LCD command
       else
-        queue.enqueue_one_now(inbound_buffer);  // Handle the G-code command
+        queue.ring_buffer.enqueue(inbound_buffer, false); // Handle the G-code command
       parsing = 0;                              // Unflag and...
     }
     else if (inbound_count < MAX_CURLY_COMMAND - 2)
       inbound_buffer[inbound_count++] = is_lcd ? c : b; // Buffer while space remains
   }
   else {
-         if (c == '{')            parsing = 1;  // Brace opens an LCD command
-    else if (prevcr && c == '\n') parsing = 2;  // CRLF indicates G-code
-    prevcr = (c == '\r');                       // Remember if it was a CR
-  }
-}
-
-/**
- * UC means connected.
- * UD means disconnected
- * The stock firmware considers USB initialized as "connected."
- */
-void update_usb_status(const bool forceUpdate) {
-  static bool last_usb_connected_status = false;
-  // This is mildly different than stock, which
-  // appears to use the usb discovery status.
-  // This is more logical.
-  if (last_usb_connected_status != MYSERIAL1.connected() || forceUpdate) {
-    last_usb_connected_status = MYSERIAL1.connected();
-    write_to_lcd(last_usb_connected_status ? F("{R:UC}\r\n") : F("{R:UD}\r\n"));
+         if (c == '{') parsing = 1;  // Brace opens an LCD command
+    else if (b == 'N' || b == 'G' || b == 'M') { parsing = 2; inbound_buffer[0] = b; inbound_count++; }
   }
 }
 
@@ -533,7 +516,7 @@ void process_M5000() {
     SERIAL_ECHOLN(command);
     write_to_lcd(command);
   } else {
-    SERIAL_ECHOLN("{WC:} wifi smart config\n{WS:<SSID>}\n{WP:<password>}\n{R:R} reset display\n{R:A} request all status\n{R:I} request IP address\n{R:C} request connection status");
+    SERIAL_ECHOLN("{WC:} wifi smart config\n{WS:<SSID>}\n{WP:<password>}\n{R:R} reset display\n{R:A} request all status\n{R:I} request IP address\n{R:C} request connection status\n{R:UD} USB disconnected\n{R:UC} USB connected (WiFi disabled)");
   }
 }
 

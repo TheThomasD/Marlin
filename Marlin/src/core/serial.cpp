@@ -108,3 +108,13 @@ void print_pos(NUM_AXIS_ARGS(const_float_t), FSTR_P const prefix/*=nullptr*/, FS
   );
   if (suffix) serial_print(suffix); else SERIAL_EOL();
 }
+
+void lcd_write(const char a) {
+  SERIAL_IMPL.write(a);
+  LCD_SERIAL.write(a);
+}
+
+void lcd_print(const EnsureDouble x, const int digit=2) {
+  SERIAL_IMPL.print(x, digit);
+  LCD_SERIAL.print(x, digit);
+}

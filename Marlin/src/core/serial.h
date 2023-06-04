@@ -134,9 +134,11 @@ extern uint8_t marlin_debug_flags;
 //
 // SERIAL_CHAR - Print one or more individual chars
 //
-inline void SERIAL_CHAR(char a) { SERIAL_IMPL.write(a); }
+void lcd_write(const char a);
+inline void SERIAL_CHAR(char a) { lcd_write(a); }
 template <typename ... Args>
-void SERIAL_CHAR(char a, Args ... args) { SERIAL_IMPL.write(a); SERIAL_CHAR(args ...); }
+NO_INLINE void SERIAL_CHAR(char a, Args ... args) { lcd_write(a); SERIAL_CHAR(args ...); }
+
 
 /**
  * SERIAL_ECHO - Print a single string or value.
@@ -145,24 +147,24 @@ void SERIAL_CHAR(char a, Args ... args) { SERIAL_IMPL.write(a); SERIAL_CHAR(args
  *
  * NOTE: Use SERIAL_CHAR to print char as a single character.
  */
-template <typename T>
-void SERIAL_ECHO(T x) { SERIAL_IMPL.print(x); }
+template <typename T> 
+NO_INLINE void SERIAL_ECHO(T x) { SERIAL_IMPL.print(x); LCD_SERIAL.print(x); }
 
 // Wrapper for ECHO commands to interpret a char
 typedef struct SerialChar { char c; SerialChar(char n) : c(n) { } } serial_char_t;
-inline void SERIAL_ECHO(serial_char_t x) { SERIAL_IMPL.write(x.c); }
+inline void SERIAL_ECHO(serial_char_t x) { lcd_write(x.c); }
 #define AS_CHAR(C) serial_char_t(C)
 #define AS_DIGIT(C) AS_CHAR('0' + (C))
 
 template <typename T>
-void SERIAL_ECHOLN(T x) { SERIAL_IMPL.println(x); }
+NO_INLINE void SERIAL_ECHOLN(T x) { SERIAL_IMPL.println(x); LCD_SERIAL.println(x); }
 
 // SERIAL_PRINT works like SERIAL_ECHO but also takes the numeric base
 template <typename T, typename U>
-void SERIAL_PRINT(T x, U y) { SERIAL_IMPL.print(x, y); }
+NO_INLINE void SERIAL_PRINT(T x, U y) { SERIAL_IMPL.print(x, y); LCD_SERIAL.print(x, y); }
 
 template <typename T>
-void SERIAL_PRINTLN(T x, PrintBase y) { SERIAL_IMPL.println(x, y); }
+NO_INLINE void SERIAL_PRINTLN(T x, PrintBase y) { SERIAL_IMPL.println(x, y); LCD_SERIAL.print(x, y); }
 
 // Flush the serial port
 inline void SERIAL_FLUSH()    { SERIAL_IMPL.flush(); }
@@ -263,20 +265,22 @@ inline void serial_println(FSTR_P const fstr) { serial_println_P(FTOP(fstr)); }
 #else // Optimization if the listed type are all the same (seems to be the case in the codebase so use that instead)
 
   template <typename ... Args>
-  void SERIAL_ECHOLIST(FSTR_P const fstr, Args && ... args) {
+  NO_INLINE void SERIAL_ECHOLIST(FSTR_P const fstr, Args && ... args) {
     serial_print(fstr);
     typename Private::first_type_of<Args...>::type values[] = { args... };
     constexpr size_t argsSize = sizeof...(args);
     for (size_t i = 0; i < argsSize; i++) {
       if (i) serial_print(F(", "));
       SERIAL_IMPL.print(values[i]);
+      LCD_SERIAL.print(values[i]);
     }
   }
 
 #endif
 
 // SERIAL_ECHO_F prints a floating point value with optional precision
-inline void SERIAL_ECHO_F(EnsureDouble x, int digit=2) { SERIAL_IMPL.print(x, digit); }
+void lcd_print(const EnsureDouble x, const int digit);
+inline void SERIAL_ECHO_F(EnsureDouble x, int digit=2) { lcd_print(x, digit); }
 
 #define SERIAL_ECHOPAIR_F_P(P,V...)   do{ serial_print_P(P); SERIAL_ECHO_F(V); }while(0)
 #define SERIAL_ECHOLNPAIR_F_P(P,V...) do{ SERIAL_ECHOPAIR_F_P(P,V); SERIAL_EOL(); }while(0)
