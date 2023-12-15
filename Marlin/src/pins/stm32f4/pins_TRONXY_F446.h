@@ -54,27 +54,21 @@
 //
 // Limit Switches
 //
-#define X_MIN_PIN                           PB0
-#define X_MAX_PIN                           PC15
-
+#define X_MIN_PIN                           PC15
+#define X_MAX_PIN                           PB0
 #define Y_STOP_PIN                          PC14
-// #endif
 
 //PE3通常接Probe
 //PC13-Z_MIN_PIN
 //PF11-Z_MAX_PIN
-#define Z_MIN_PIN                           PC13
+#define Z_STOP_PIN                          PE3
 
 //
 // Steppers
 //
-#define X_ENABLE_PIN                        PA3
-#define X_STEP_PIN                          PA0
-#define X_DIR_PIN                           PA4
-
-#define X2_ENABLE_PIN                       PF0
-#define X2_STEP_PIN                         PE5
-#define X2_DIR_PIN                          PF1
+#define X_ENABLE_PIN                        PF0
+#define X_STEP_PIN                          PE5
+#define X_DIR_PIN                           PF1
 
 #define Y_ENABLE_PIN                        PF5
 #define Y_STEP_PIN                          PF9
@@ -84,25 +78,25 @@
 #define Z_STEP_PIN                          PA6
 #define Z_DIR_PIN                           PF15
 
-#define E0_ENABLE_PIN                       PG5
-#define E0_STEP_PIN                         PD12
-#define E0_DIR_PIN                          PG4
+#define E0_ENABLE_PIN                       PF14
+#define E0_STEP_PIN                         PB1
+#define E0_DIR_PIN                          PF13
 
-#define E1_ENABLE_PIN                       PF14
-#define E1_STEP_PIN                         PB1
-#define E1_DIR_PIN                          PF13
+#define E1_ENABLE_PIN                       PG5
+#define E1_STEP_PIN                         PD12
+#define E1_DIR_PIN                          PG4
 
 //
 // Temperature Sensors
 //
-#define TEMP_0_PIN                          PC0   // TH1
-#define TEMP_1_PIN                          PC3   // TH2                  
+#define TEMP_0_PIN                          PC3   // TH1
+#define TEMP_1_PIN                          PC0   // TH2                
 
 //
 // Heaters
 //
-#define HEATER_0_PIN                        PA15 // HEATER1
-#define HEATER_1_PIN                        PG7  // HEATER2
+#define HEATER_0_PIN                        PG7  // HEATER1
+#define HEATER_1_PIN                        PA15 // HEATER2
 
 #define STEP_TIMER                            6
 #define TEMP_TIMER                            14
@@ -115,20 +109,22 @@
 //这里必须复合PeripheralPins.c中的PWM pin定义const PinMap PinMap_PWM[]
 //详见PWM_PIN(x)定义
 #endif
-#define SERVO0_PIN                            PB10 //使能NUM_SERVOS>1后开放
+#define SERVO0_PIN                            PB10 //使能NUM_SERVOS>1后开放,注意,它与激光共用一个引脚,所以不能同时开启
 
 #define TEMP_BED_PIN                        PC2 // TB1   
 #define HEATER_BED_PIN                      PE2 // HOT BED
+
 //#define HEATER_BED_INVERTING              true
 
 //
 // Fans
 //
-#define CONTROLLER_FAN_PIN                  PD7 // BOARD FAN
-#define FAN_PIN                             PG6 //FAN0 (part cooler for E0)
-#define FAN1_PIN                            PG0 //FAN1 (part cooler for E1)
-#define FAN2_PIN                            PF10//FAN2 (hotend cooler for E0)
-#define FAN3_PIN                            PG9 //FAN3 (hotend cooler for E1)
+#define CONTROLLER_FAN_PIN                  PD7   // BOARD FAN
+#define FAN_PIN                             PG0 //FAN0
+#define FAN1_PIN                            PB6 //FAN1
+#define THROAT_FAN                          2
+#define FAN2_PIN                            PG9 //FAN2
+#define FAN3_PIN                            PF10//FAN3
 #define FAN_SOFT_PWM
 //
 // Misc
@@ -144,10 +140,10 @@
 #define POWER_LM393_PIN                     PE0 //YSZ-COMMENT:这里接的是比较器LM393的正极,必须配置成输出,高电平
 
 #ifndef FIL_RUNOUT_PIN
-  #define FIL_RUNOUT_PIN                    PF12  // MT_DET
+  #define FIL_RUNOUT_PIN                    PE6  // MT_DET
 #endif
 #ifndef FIL_RUNOUT2_PIN
-  #define FIL_RUNOUT2_PIN                   PE6
+  #define FIL_RUNOUT2_PIN                   PF12
 #endif
 
 // SPI Flash
@@ -232,5 +228,9 @@
 #define SDIO_D3_PIN                         PC11
 #define SDIO_CK_PIN                         PC12
 #define SDIO_CMD_PIN                        PD2
+
+#if USBHOST_HS_EN
+#define HAS_OTG_USB_HOST_SUPPORT
+#endif
 
 #define SPEAKER //蜂鸣器无源
