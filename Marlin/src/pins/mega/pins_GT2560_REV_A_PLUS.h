@@ -96,20 +96,26 @@
 // Heaters / Fans
 //
 #define HEATER_0_PIN                           2
-#define FAN1_PIN                               3 // was HEATER_1_PIN
+#define FAN_PIN                                3 // was HEATER_1_PIN
 #define HEATER_BED_PIN                         4
-#ifndef FAN_PIN
-  #define FAN_PIN                              7
+#ifndef FAN1_PIN
+  #define FAN1_PIN                             7 // was FAN_PIN
 #endif
 
 //
 // Misc. Functions
 //
 #define SDSS                                  53
-#define LED_PIN                               13
+//#define LED_PIN                               13 // disabled for timer
 #define PS_ON_PIN                             12
 #define SUICIDE_PIN                           54  // Must be enabled at startup to keep power flowing
 #define KILL_PIN                              -1
+
+// the following is required to allow for the probe to work correctly
+#undef TIMER3A
+#undef TIMER4A
+#define TIMER3A 12
+#define TIMER4A 46
 
 #if HAS_WIRED_LCD
   
