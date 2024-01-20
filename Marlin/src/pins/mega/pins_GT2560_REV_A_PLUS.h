@@ -44,10 +44,10 @@
 #define X_MIN_PIN                             22
 #define X_MAX_PIN                             24
 #define Y_MIN_PIN                             26
-#define Y_MAX_PIN                             28 // will be used for filament runout sensor
+//#define Y_MAX_PIN                             28 // will be used for filament runout sensor
 #define Z_MIN_PIN                             30
 
-#define FIL_RUNOUT_PIN Y_MAX_PIN
+#define FIL_RUNOUT_PIN 28
 
 #if ENABLED(BLTOUCH)
   #if MB(GT2560_REV_A_PLUS)
