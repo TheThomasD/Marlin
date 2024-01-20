@@ -28,40 +28,6 @@
  * ATmega2560
  */
 
-#define BOARD_INFO_NAME "GT2560 Rev.A+"
-
-/**
- * Marlin 3D Printer Firmware
- * Copyright (c) 2020 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
- *
- * Based on Sprinter and grbl.
- * Copyright (c) 2011 Camiel Gubbels / Erik van der Zalm
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
- *
- */
-#pragma once
-
-/**
- * Geeetech GT2560 Revision A board pin assignments, based on the work of
- * George Robles (https://georges3dprinters.com) and
- * Richard Smith <galorin@gmail.com>
- * Schematic: https://green-candy.osdn.jp/external/MarlinFW/board_schematics/Geeetech%20GT2560%20Revision%20A/GT2560_sch.pdf
- * Origin: https://www.geeetech.com/wiki/images/9/90/GT2560_sch.pdf
- * ATmega2560
- */
-
 /*
   Pins: https://www.14core.com/wp-content/uploads/2015/06/ATMEGA-2560-Pin-Out-Diagram.png
   Connectors: https://www.geeetech.com/Documents/Users%20Manual%20of%20GT2560.pdf
@@ -70,9 +36,7 @@
 #define ALLOW_MEGA1280
 #include "env_validate.h"
 
-#ifndef BOARD_INFO_NAME
-  #define BOARD_INFO_NAME "GT2560 Rev.A+"
-#endif
+#define BOARD_INFO_NAME "GT2560 Rev.A+"
 
 //
 // Limit Switches
@@ -148,11 +112,11 @@
 #define KILL_PIN                              -1
 
 #if HAS_WIRED_LCD
-
+  
   #define BEEPER_PIN                          18
-
+  
   #if IS_NEWPANEL
-
+    
     #if ENABLED(MKS_MINI_12864)
       #define DOGLCD_A0                        5
       #define DOGLCD_CS                       21
@@ -162,15 +126,15 @@
       // Disconnect EXP2-1 and EXP2-2, otherwise future firmware upload won't work.
       #define DOGLCD_A0                       20
       #define DOGLCD_CS                       17
-
+      
       #define NEOPIXEL_PIN                    21
       #define BTN_EN1                         42
       #define BTN_EN2                         40
-
+      
       #define LCD_RESET_PIN                   16
-
+      
       #define LCD_CONTRAST_INIT              220
-
+      
       #define LCD_BACKLIGHT_PIN               -1
     #else
       #define LCD_PINS_RS                     20
@@ -182,31 +146,31 @@
       #define BTN_EN1                         42
       #define BTN_EN2                         40
     #endif
-
+    
     #define BTN_ENC                           19
     #define SD_DETECT_PIN                     38
-
+    
   #else                                           // !IS_NEWPANEL
-
+    
     #define SHIFT_CLK_PIN                     38
     #define SHIFT_LD_PIN                      42
     #define SHIFT_OUT_PIN                     40
     #define SHIFT_EN_PIN                      17
-
+    
     #define LCD_PINS_RS                       16
     #define LCD_PINS_ENABLE                    5
     #define LCD_PINS_D4                        6
     #define LCD_PINS_D5                       21
     #define LCD_PINS_D6                       20
     #define LCD_PINS_D7                       19
-
+    
     #if ENABLED(REPRAP_DISCOUNT_FULL_GRAPHIC_SMART_CONTROLLER)
       #define BTN_ENC_EN             LCD_PINS_D7  // Detect the presence of the encoder
     #endif
-
+    
     #define SD_DETECT_PIN                     -1
-
+    
   #endif // !IS_NEWPANEL
-
+  
 #endif // HAS_WIRED_LCD
 
