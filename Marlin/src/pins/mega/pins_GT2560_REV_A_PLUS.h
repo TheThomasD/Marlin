@@ -95,8 +95,8 @@
 //
 // Heaters / Fans
 //
-#define HEATER_0_PIN                           2
-#define FAN_PIN                                3 // was HEATER_1_PIN
+#define FAN_PIN                                2 // was HEATER_0_PIN
+#define HEATER_0_PIN                           3 // was HEATER_1_PIN
 #define HEATER_BED_PIN                         4
 #ifndef FAN1_PIN
   #define FAN1_PIN                             7 // was FAN_PIN
