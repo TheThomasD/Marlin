@@ -22,6 +22,7 @@
 #pragma once
 
 #include "../inc/MarlinConfigPre.h"
+#include "../core/types.h"
 
 #if ENABLED(INTEGRATED_BABYSTEPPING)
   #define BABYSTEPS_PER_SEC 1000UL
