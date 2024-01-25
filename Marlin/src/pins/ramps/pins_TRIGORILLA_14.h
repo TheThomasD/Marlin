@@ -156,7 +156,7 @@
   #endif
 #endif
 
-#if EITHER(ANYCUBIC_LCD_CHIRON, ANYCUBIC_LCD_I3MEGA)
+#if ANY(ANYCUBIC_LCD_CHIRON, ANYCUBIC_LCD_I3MEGA, ANYCUBIC_TOUCHSCREEN)
   #ifndef BEEPER_PIN
     #define BEEPER_PIN               EXP2_03_PIN  // Chiron Standard Adapter
   #endif
