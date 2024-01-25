@@ -553,11 +553,11 @@ void AnycubicTouchscreenClass::HandleSpecialMenu() {
            (strcasestr_P(currentTouchscreenSelection, PSTR(SM_EZLVL_MENU_S)) != NULL)) {
     SERIAL_ECHOLNPGM("Special Menu: Enter Easy Level Menu");
     LevelMenu = true;
-    injectCommands(F("G28\nM420 S0\nG90\nG1 Z5\nG1 X15 Y15 F4000\nG1 Z0"));
+    injectCommands(F("G28\nM420 S0\nG90\nG1 Z5\nG1 X15 Y55 F4000\nG1 Z0"));
   } else if ((strcasestr_P(currentTouchscreenSelection, PSTR(SM_EZLVL_P1_L)) != NULL) ||
              (strcasestr_P(currentTouchscreenSelection, PSTR(SM_EZLVL_P1_S)) != NULL)) {
     SERIAL_ECHOLNPGM("Special Menu: Easy Level POINT 1");
-    injectCommands(F("G90\nG1 Z5\nG1 X15 Y15 F4000\nG1 Z0"));
+    injectCommands(F("G90\nG1 Z5\nG1 X15 Y55 F4000\nG1 Z0"));
   } else if ((strcasestr_P(currentTouchscreenSelection, PSTR(SM_EZLVL_P2_L)) != NULL) ||
              (strcasestr_P(currentTouchscreenSelection, PSTR(SM_EZLVL_P2_S)) != NULL)) {
     SERIAL_ECHOLNPGM("Special Menu: Easy Level POINT 2");
@@ -570,7 +570,7 @@ void AnycubicTouchscreenClass::HandleSpecialMenu() {
     #endif
 
     #if ENABLED(KNUTWURST_CHIRON)
-    injectCommands(F("G90\nG1 Z5\nG1 X385 Y15 F4000\nG1 Z0"));
+    injectCommands(F("G90\nG1 Z5\nG1 X395 Y55 F4000\nG1 Z0"));
     #endif
 
     #if ENABLED(KNUTWURST_4MAXP2)
@@ -588,7 +588,7 @@ void AnycubicTouchscreenClass::HandleSpecialMenu() {
     #endif
 
     #if ENABLED(KNUTWURST_CHIRON)
-    injectCommands(F("G90\nG1 Z5\nG1 X395 Y395 F4000\nG1 Z0"));
+    injectCommands(F("G90\nG1 Z5\nG1 X395 Y355 F4000\nG1 Z0"));
     #endif
 
     #if ENABLED(KNUTWURST_4MAXP2)
@@ -606,7 +606,7 @@ void AnycubicTouchscreenClass::HandleSpecialMenu() {
     #endif
 
     #if ENABLED(KNUTWURST_CHIRON)
-    injectCommands(F("G90\nG1 Z5\nG1 X15 Y395 F4000\nG1 Z0"));
+    injectCommands(F("G90\nG1 Z5\nG1 X15 Y355 F4000\nG1 Z0"));
     #endif
 
     #if ENABLED(KNUTWURST_4MAXP2)
@@ -616,7 +616,7 @@ void AnycubicTouchscreenClass::HandleSpecialMenu() {
              (strcasestr_P(currentTouchscreenSelection, PSTR(SM_EZLVL_EXIT_S)) != NULL)) {
     SERIAL_ECHOLNPGM("Special Menu: Exit Easy Level Menu");
     LevelMenu = false;
-    injectCommands(F("G90\nG1 Z10\nG1 X15 Y15 F4000\nM420 S1"));
+    injectCommands(F("G90\nG1 Z10\nG1 X0 Y0 F4000\nM420 S1"));
   }
   #endif // if ENABLED(KNUTWURST_SPECIAL_MENU)
 }
