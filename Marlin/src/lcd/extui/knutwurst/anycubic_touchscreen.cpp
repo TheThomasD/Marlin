@@ -514,13 +514,17 @@ void AnycubicTouchscreenClass::HandleSpecialMenu() {
   } else if ((strcasestr_P(currentTouchscreenSelection, PSTR(SM_BLTZ_UP_L)) != NULL) ||
              (strcasestr_P(currentTouchscreenSelection, PSTR(SM_BLTZ_UP_S)) != NULL)) {
     SERIAL_ECHOLNPGM("Special Menu: Offset UP");
-    babystep.add_mm(Z_AXIS, 0.05F);
-    setZOffset_mm(getZOffset_mm() + 0.05F);
+    if (isPrinting())
+      babystep.add_mm(Z_AXIS, 0.05F);
+    else
+      setZOffset_mm(getZOffset_mm() + 0.05F);
   } else if ((strcasestr_P(currentTouchscreenSelection, PSTR(SM_BLTZ_DN_L)) != NULL) ||
              (strcasestr_P(currentTouchscreenSelection, PSTR(SM_BLTZ_DN_S)) != NULL)) {
     SERIAL_ECHOLNPGM("Special Menu: Offset Down");
-    babystep.add_mm(Z_AXIS, -0.05F);
-    setZOffset_mm(getZOffset_mm() - 0.05F);
+    if (isPrinting())
+      babystep.add_mm(Z_AXIS, -0.05F);
+    else
+      setZOffset_mm(getZOffset_mm() - 0.05F);
   } else if ((strcasestr_P(currentTouchscreenSelection, PSTR(SM_HS_ENABLE_L)) != NULL) ||
              (strcasestr_P(currentTouchscreenSelection, PSTR(SM_HS_ENABLE_S)) != NULL)) {
     SERIAL_ECHOLNPGM("Special Menu: HighSpeed Mode ENABLED");
