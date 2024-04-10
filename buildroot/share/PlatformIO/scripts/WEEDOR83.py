@@ -1,11 +1,10 @@
 import os
 Import("env", "projenv")
+import marlin
 
 # Relocate firmware from 0x08000000 to 0x08008000
-for define in env['CPPDEFINES']:
-    if define[0] == "VECT_TAB_ADDR":
-        env['CPPDEFINES'].remove(define)
-env['CPPDEFINES'].append(("VECT_TAB_ADDR", "0x08008000"))
+marlin.relocate_firmware("0x08008000")
+
 
 custom_ld_script = os.path.abspath("buildroot/share/PlatformIO/ldscripts/WEEDOR83.ld")
 for i, flag in enumerate(env["LINKFLAGS"]):

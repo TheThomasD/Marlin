@@ -2,9 +2,10 @@
 <b>NOTE:</b> use this stuff at your own risk. Upload is only possible on Windows as the Weedo firmware upload tool is only available for that platform.
 <h3>Build instructions</h3>
 <ol>
-  <li>check out this repository in <a href="https://code.visualstudio.com/">VSCode</a></li>
-  <li>download <a href="https://github.com/TheThomasD/Arduino_STM32_MPMDv2/archive/refs/heads/changes_MPMDv2.zip">this zip file</a> from <a href="https://github.com/TheThomasD/Arduino_STM32_MPMDv2">this repository</a> (basically, download the full contents as a zip)</li>
-  <li>take the contents of the zip and extract it into the folder <code>&lt;userdir&gt;\.platformio\packages\framework-arduinoststm32-maple@99.99.99</code> (in Windows: <code>C:\Users\&lt;username&gt;\...</code>, in Linux <code>/home/&lt;username&gt;/...</code>), zip file contents should be directly located in the mentioned folder. You have to create the folder manually.</li>
+  <li><del>check out this repository in <a href="https://code.visualstudio.com/">VSCode</a></del></li>
+  <li><del>download <a href="https://github.com/TheThomasD/Arduino_STM32_MPMDv2/archive/refs/heads/changes_MPMDv2.zip">this zip file</a> from <a href="https://github.com/TheThomasD/Arduino_STM32_MPMDv2">this repository</a> (basically, download the full contents as a zip)</del></li>
+  <li><del>take the contents of the zip and extract it into the folder <code>&lt;userdir&gt;\.platformio\packages\framework-arduinoststm32-maple@99.99.99</code> (in Windows: <code>C:\Users\&lt;username&gt;\...</code>, in Linux <code>/home/&lt;username&gt;/...</code>), zip file contents should be directly located in the mentioned folder. You have to create the folder manually.</del></li>
+  <li>note that the <code>platformio.ini</code> references a github repo that contains changes to <code>framework-arduinoststm32-maple</code> that might collide with compilations of Marlin</li>
   <li>start the build in VSCode</li>
   <li>start <a href="WEEDOIAP.exe">this</a> tool (WEEDOIAP.exe) on a Windows machine, connect your printer, select the right COM port</li>
   <li>select the binary that you built as firmware path (should be located in <code>&lt;location of this repo on your PC&gt;\.pio\build\WEEDOR83\firmware.bin</code> (need to copy it to the Windows machine of course if you built on Linux)</li>
