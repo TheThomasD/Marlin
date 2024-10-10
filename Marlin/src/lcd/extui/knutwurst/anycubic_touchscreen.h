@@ -265,12 +265,12 @@ class AnycubicTouchscreenClass {
     String flowRateBuffer;
     String zOffsetBuffer;
 
-    uint8_t SpecialMenu = false;
-    uint8_t MMLMenu     = false;
-    uint8_t FlowMenu    = false;
-    uint8_t BLTouchMenu = false;
-    uint8_t LevelMenu   = false;
-    uint8_t CaseLight   = true;
+    boolean SpecialMenu = false;
+    boolean MMLMenu     = false;
+    boolean FlowMenu    = false;
+    boolean BLTouchMenu = false;
+    boolean LevelMenu   = false;
+    boolean CaseLight   = true;
 
 #if ENABLED(KNUTWURST_MEGA_P_LASER)
     typedef struct {

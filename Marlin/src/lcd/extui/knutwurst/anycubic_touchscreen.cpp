@@ -621,7 +621,7 @@ void AnycubicTouchscreenClass::RenderCurrentFileList() {
   uint16_t selectedNumber   = 0;
   FileList currentFileList;
 
-  if (SpecialMenu == false) {
+  if (!SpecialMenu) {
     currentTouchscreenSelection[0] = 0;
   }
 
@@ -633,16 +633,25 @@ void AnycubicTouchscreenClass::RenderCurrentFileList() {
   SEND_PGM("FN ");
   SENDLINE_PGM("");
 
-  if (!isMediaInserted() && !SpecialMenu) {
+  if (
+    #if ENABLED(SDSUPPORT)
+    !isMediaInserted() && 
+    #endif
+    !SpecialMenu) {
     SENDLINE_PGM(SM_SPECIAL_MENU_S);
     SENDLINE_PGM(SM_SPECIAL_MENU_L);
   } else {
     if (SpecialMenu) {
       RenderSpecialMenu(selectedNumber);
-    } else if (selectedNumber <= currentFileList.count()) {
+    }
+    #if ENABLED(SDSUPPORT)
+    else if (selectedNumber <= currentFileList.count()) {
       RenderCurrentFolder(selectedNumber);
     }
+    #endif
   }
+  
+
   // Filelist stop
   SEND_PGM("END");
   SENDLINE_PGM("");
@@ -1157,9 +1166,7 @@ void AnycubicTouchscreenClass::GetCommandFromTFT() {
               break;
 
             case 8: // A8 GET SD LIST
-  #ifdef SDSUPPORT
               RenderCurrentFileList();
-  #endif
               break;
 
             case 9: // A9 pause sd print
@@ -1187,7 +1194,6 @@ void AnycubicTouchscreenClass::GetCommandFromTFT() {
               break;
 
             case 13: // A13 SELECTION FILE
-  #if ENABLED(SDSUPPORT)
               {
                 starpos = (strchr(TFTstrchr_pointer + 4, '*'));
                 if (TFTstrchr_pointer[4] == '/') {
@@ -1211,7 +1217,6 @@ void AnycubicTouchscreenClass::GetCommandFromTFT() {
                                        currentFileOrDirectory); // J20 File Selected
                 }
               }
-  #endif
               break;
 
             case 14: // A14 START PRINTING
@@ -1414,14 +1419,16 @@ void AnycubicTouchscreenClass::GetCommandFromTFT() {
 
             case 26: // A26 refresh SD
               {
-  #ifdef SDSUPPORT
+  #if ENABLED(SDSUPPORT)
                 FileList currentFileList;
+  #endif
 
                 if (currentTouchscreenSelection[0] == '<') {
     #ifdef ANYCUBIC_TFT_DEBUG
                   SERIAL_ECHOLNPGM("TFT Serial Debug: Enter Special Menu");
     #endif
                   HandleSpecialMenu();
+    #if ENABLED(SDSUPPORT)
                 } else if (((strcasestr_P(currentFileOrDirectory, PSTR(SM_DIR_UP_S)) != NULL) ||
                             (strcasestr_P(currentFileOrDirectory, PSTR(SM_DIR_UP_L)) != NULL)) &&
                            isMediaInserted()) {
@@ -1443,11 +1450,11 @@ void AnycubicTouchscreenClass::GetCommandFromTFT() {
     #endif
                 } else if (currentTouchscreenSelection[0] == 0 && isMediaInserted()) {
                   card.mount();
+  #endif // ifdef SDSUPPORT
                 }
                 if (SpecialMenu == false) {
                   currentTouchscreenSelection[0] = 0;
                 }
-  #endif // ifdef SDSUPPORT
               }
               break;
 
