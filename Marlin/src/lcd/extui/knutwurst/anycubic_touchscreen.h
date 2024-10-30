@@ -101,7 +101,7 @@ enum AnycubicMediaPauseState {
 #define SM_HS_ENABLE_S     "<HSENABL.GCO"
 
 
-#if DISABLED(KNUTWURST_DGUS2_TFT)
+#if DISABLED(KNUTWURST_DGUS2_TFT, CHIRON2)
   #define SM_DIR_UP_L        "/.."
   #define SM_SPECIAL_MENU_L  "<Special Menu>"
   #define SM_PID_HOTEND_L    "<PID Tune Hotend>"
@@ -144,9 +144,7 @@ enum AnycubicMediaPauseState {
   #define SM_BLTZ_EXIT_L     "<SAVE and EXIT>"
   #define SM_HS_DISABLE_L    "<Disable HiSpeed Mode>"
   #define SM_HS_ENABLE_L     "<Enable HiSpeed Mode>"
-#endif // !KNUTWURST_DGUS2_TFT
-
-#if ENABLED(KNUTWURST_DGUS2_TFT)
+#else
   #define SM_DIR_UP_L        "/..                 .gcode"
   #define SM_SPECIAL_MENU_L  "<Special Menu>      .gcode"
   #define SM_PID_HOTEND_L    "<PID Tune Hotend>   .gcode"
@@ -189,7 +187,7 @@ enum AnycubicMediaPauseState {
   #define SM_BLTZ_EXIT_L     "<SAVE and EXIT>     .gcode"
   #define SM_HS_DISABLE_L    "<Disable HiSpeed>   .gcode"
   #define SM_HS_ENABLE_L     "<Enable HiSpeed>    .gcode"
-#endif // KNUTWURST_DGUS2_TFT
+#endif // DISABLED(KNUTWURST_DGUS2_TFT, CHIRON2)
 
 class AnycubicTouchscreenClass {
 

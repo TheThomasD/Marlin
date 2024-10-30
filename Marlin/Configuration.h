@@ -86,6 +86,7 @@
 // @section machine
 
 // Choose the name from boards.h that matches your setup
+#define CHIRON2
 #ifndef MOTHERBOARD
   #define MOTHERBOARD BOARD_TRIGORILLA_14
 #endif
@@ -1169,14 +1170,22 @@
  * Override with M92
  *                                      X, Y, Z [, I [, J [, K...]]], E0 [, E1[, E2...]]
  */
-#define DEFAULT_AXIS_STEPS_PER_UNIT   { 80.32, 100.21, 394.64, 137.4 }
+#if DISABLED(CHIRON2)
+  #define DEFAULT_AXIS_STEPS_PER_UNIT   { 80.14, 100.16, 394.64, 137.4 }
+#else
+  #define DEFAULT_AXIS_STEPS_PER_UNIT   { 160.08, 200.70, 800.0, 812.0 }
+#endif
 
 /**
  * Default Max Feed Rate (linear=mm/s, rotational=°/s)
  * Override with M203
  *                                      X, Y, Z [, I [, J [, K...]]], E0 [, E1[, E2...]]
  */
-#define DEFAULT_MAX_FEEDRATE          { 150, 150, 20, 60 }
+#if DISABLED(CHIRON2)
+  #define DEFAULT_MAX_FEEDRATE          { 150, 150, 20, 60 }
+#else
+  #define DEFAULT_MAX_FEEDRATE          { 150, 150, 20, 40 }
+#endif
 
 //#define LIMITED_MAX_FR_EDITING        // Limit edit via M203 or LCD to DEFAULT_MAX_FEEDRATE * 2
 #if ENABLED(LIMITED_MAX_FR_EDITING)
@@ -1655,7 +1664,11 @@
 // @section extruder
 
 // For direct drive extruder v9 set to true, for geared extruder set to false.
-#define INVERT_E0_DIR true // set to false for stock drivers or TMC2208 with reversed connectors
+#if DISABLED(CHIRON2)
+  #define INVERT_E0_DIR true // set to false for stock drivers or TMC2208 with reversed connectors
+#else
+  #define INVERT_E0_DIR false // set to false for stock drivers or TMC2208 with reversed connectors
+#endif
 #define INVERT_E1_DIR true // set to false for stock drivers or TMC2208 with reversed connectors
 #define INVERT_E2_DIR false
 #define INVERT_E3_DIR false
@@ -2077,7 +2090,11 @@
 // For DELTA this is the top-center of the Cartesian print volume.
 //#define MANUAL_X_HOME_POS 0
 //#define MANUAL_Y_HOME_POS 0
-#define MANUAL_Z_HOME_POS 3
+#if ENABLED(CHIRON2)
+  #define MANUAL_Z_HOME_POS 5
+#else
+  #define MANUAL_Z_HOME_POS 3
+#endif
 //#define MANUAL_I_HOME_POS 0
 //#define MANUAL_J_HOME_POS 0
 //#define MANUAL_K_HOME_POS 0
