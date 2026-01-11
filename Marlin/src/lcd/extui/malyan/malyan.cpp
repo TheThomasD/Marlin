@@ -446,7 +446,6 @@ void parse_lcd_byte(const byte b) {
   static char inbound_buffer[MAX_CURLY_COMMAND];
 
   static uint8_t parsing = 0;                   // Parsing state
-  static bool prevcr = false;                   // Was the last c a CR?
 
   const char c = b & 0x7F;
 
@@ -465,12 +464,12 @@ void parse_lcd_byte(const byte b) {
         queue.ring_buffer.enqueue(inbound_buffer, false); // Handle the G-code command
       parsing = 0;                              // Unflag and...
     }
-    else if (inbound_count < MAX_CURLY_COMMAND - 2)
+    else if (inbound_count < MAX_CURLY_COMMAND - 2 && (is_lcd || b != '\r'))
       inbound_buffer[inbound_count++] = is_lcd ? c : b; // Buffer while space remains
   }
   else {
-         if (c == '{') parsing = 1;  // Brace opens an LCD command
-    else if (b == 'N' || b == 'G' || b == 'M') { parsing = 2; inbound_buffer[0] = b; inbound_count++; }
+    if (c == '{') parsing = 1;  // Brace opens an LCD command
+    else if (b == 'N' || b == 'G' || b == 'M') { parsing = 2; inbound_buffer[0] = b; inbound_count = 1; }
   }
 }
 
