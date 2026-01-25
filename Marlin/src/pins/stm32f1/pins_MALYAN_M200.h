@@ -55,7 +55,8 @@
 //
 #define X_MIN_PIN                           PB4
 #define Y_MIN_PIN                           PA15
-#define Z_MIN_PIN                           PB5
+#define Z_MIN_PIN                           PA2
+#define Z_MIN_PROBE_PIN                     PB5
 //#define Z_MAX_PIN                           PA11 //unfortunately also used by "sd card present"
 
 //
@@ -90,7 +91,8 @@
 #define HEATER_0_PIN                        PB6   // HOTEND0 MOSFET
 #define HEATER_BED_PIN                      PB7   // BED MOSFET
 
-#define MALYAN_FAN1_PIN                     PB8   // FAN1 header on board - PRINT FAN
+#define MALYAN_FAN1_PIN                     PB8   // FAN1 header on board - EXTRUDER FAN
 #define MALYAN_FAN2_PIN                     PB3   // FAN2 header on board - CONTROLLER FAN
+#define MALYAN_FAN3_PIN                     PA3   // P8 header on board, unused pin next to Z_MIN-PIN - was UNUSED, now PART COOLING FAN
 
 #define FAN1_PIN                 MALYAN_FAN2_PIN
