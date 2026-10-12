@@ -51,6 +51,7 @@ namespace Geeetech
         if (difference != 0)
             babystep.add_mm(Z_AXIS, difference);
         temporaryBabystepValue = zOffset;
+        settingsStatusPending = true;
     }
 } // namespace Geeetech
 

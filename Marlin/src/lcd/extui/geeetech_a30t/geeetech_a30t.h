@@ -118,7 +118,7 @@ namespace Geeetech
         static void waitForCommand(const bool ignore);
         static void showStatus(const char *const message);
         static void showUserMessage(const UserMessageCode &code);
-        static void requestStatusUpdate();
+        static void requestStatusUpdate(const bool settingsChanged = false);
 
     private:
         static bool shouldWaitForCommand;
@@ -127,6 +127,7 @@ namespace Geeetech
         // send variables
         static millis_t nextStatusSend;
         static bool disableAxisStatusSend;
+        static bool settingsStatusPending;
         static char output[200]; // should be enough for all message
         // send methods
         static void setNextSendMs(const millis_t &currentTimeMs);

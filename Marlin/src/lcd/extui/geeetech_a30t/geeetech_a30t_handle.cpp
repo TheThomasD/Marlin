@@ -43,16 +43,16 @@ namespace Geeetech
 
     static bool isGCodeCommand(const String &command, const char *const code)
     {
-        String trimmedCommand = command;
-        trimmedCommand.trim();
-        const size_t codeLength = strlen(code);
-        if (!trimmedCommand.startsWith(code))
-            return false;
-        if (trimmedCommand.length() == codeLength)
-            return true;
+        const char *commandText = command.c_str();
+        while (*commandText == ' ' || *commandText == '\t')
+            ++commandText;
 
-        const char separator = trimmedCommand.charAt(codeLength);
-        return separator == ' ' || separator == '\t' || separator == ';';
+        const size_t codeLength = strlen(code);
+        if (strncmp(commandText, code, codeLength))
+            return false;
+
+        const char separator = commandText[codeLength];
+        return !separator || separator == ' ' || separator == '\t' || separator == ';';
     }
 
     void TouchDisplay::handleGcode(const String &gcode)
@@ -72,6 +72,10 @@ namespace Geeetech
             mixerStatusPending = true;
             setNextSendMs(millis() + SEND_CYCLE_IN_MS);
         }
+        if (isGCodeCommand(gcode, "M92") || isGCodeCommand(gcode, "M201")
+            || isGCodeCommand(gcode, "M203") || isGCodeCommand(gcode, "M204")
+            || isGCodeCommand(gcode, "M205") || isGCodeCommand(gcode, "M206"))
+            settingsStatusPending = true;
         queue.enqueue_one_now(gcode.c_str());
     }
 

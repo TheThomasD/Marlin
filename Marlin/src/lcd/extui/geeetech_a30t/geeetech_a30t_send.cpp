@@ -57,7 +57,10 @@ namespace Geeetech
             if (!disableAxisStatusSend)
             {
                 send_L1_AxisInfo();
-                send_L24_SettingsStatus();
+                if (settingsStatusPending) {
+                    send_L24_SettingsStatus();
+                    settingsStatusPending = false;
+                }
             }
             send_L2_TempInfo();
             send_L3_PrintInfo();
@@ -71,6 +74,8 @@ namespace Geeetech
 
     void TouchDisplay::send_L1_AxisInfo()
     {
+        static char lastMessage[sizeof(output)];
+        static bool messageSent = false;
         char x[8], y[8], z[8]; // 6 digits + dot + \0
 
         xyze_pos_t currentLogicalPos = current_position.asLogical();
@@ -79,12 +84,18 @@ namespace Geeetech
         dtostrf(currentLogicalPos.z, 0, 3, z);
 
         snprintf(output, sizeof(output), "L1 X%s Y%s Z%s F%d",
-                 x, y, z, FEEDRATE);
-        sendToDisplay(output);
+                 x /*7*/, y /*7*/, z /*7*/, FEEDRATE /*3*/);
+        if (!messageSent || strcmp(output, lastMessage)) {
+            sendToDisplay(output);
+            strcpy(lastMessage, output);
+            messageSent = true;
+        }
     }
 
     void TouchDisplay::send_L2_TempInfo()
     {
+        static char lastMessage[sizeof(output)];
+        static bool messageSent = false;
         char bedCurrentTemp[6], bedTargetTemp[6], e0CurrentTemp[6], e0TargetTemp[6];
 
         dtostrf(getActualTemp_celsius(BED), 0, 1, bedCurrentTemp);
@@ -93,23 +104,33 @@ namespace Geeetech
         dtostrf(getTargetTemp_celsius(E0), 0, 1, e0TargetTemp);
 
         snprintf(output, sizeof(output), "L2 B:%s /%s /%d T0:%s /%s /%d T1:%s /%s /%d T2:%s /%s /%d SD:%d F0:%d F2:50 R:%d FR:%d",
-                 bedCurrentTemp, bedTargetTemp, BED_ACTIVE,
-                 e0CurrentTemp, e0TargetTemp, E0_ACTIVE,
-                 e0CurrentTemp, e0TargetTemp, E0_ACTIVE,
-                 e0CurrentTemp, e0TargetTemp, E0_ACTIVE,
-                 SD_ACTIVE, F0_SPEED, PRINT_SPEED, FEEDRATE);
+                 bedCurrentTemp /*5*/, bedTargetTemp /*5*/, BED_ACTIVE /*1*/,
+                 e0CurrentTemp /*5*/, e0TargetTemp /*5*/, E0_ACTIVE /*1*/,
+                 e0CurrentTemp /*5*/, e0TargetTemp /*5*/, E0_ACTIVE /*1*/,
+                 e0CurrentTemp /*5*/, e0TargetTemp /*5*/, E0_ACTIVE /*1*/,
+                 SD_ACTIVE /*1*/, F0_SPEED /*3*/, PRINT_SPEED /*3*/, FEEDRATE /*3*/);
 
-        sendToDisplay(output);
+        if (!messageSent || strcmp(output, lastMessage)) {
+            sendToDisplay(output);
+            strcpy(lastMessage, output);
+            messageSent = true;
+        }
     }
 
     void TouchDisplay::send_L3_PrintInfo()
     {
+        static char lastMessage[sizeof(output)];
+        static bool messageSent = false;
         snprintf(output, sizeof(output), "L3 PS:%d VL:0 MT:%d FT:%d AL:%d ST:1 WF:0 MR:%lu FN:%.64s PG:%d TM:%lu LA:0 LC:0",
-                 getPrintStatus(), MOTOR_TENSION_STATUS, FILAMENT_SENSOR_STATUS,
-                 simulatedAutoLevelSwitchOn, (unsigned long)getMixerRatio(), CURRENT_FILENAME,
-                 getProgress_percent(), (unsigned long)getProgress_seconds_elapsed());
+                 getPrintStatus() /*1*/, MOTOR_TENSION_STATUS /*1*/, FILAMENT_SENSOR_STATUS /*3*/,
+                 simulatedAutoLevelSwitchOn /*1*/, (unsigned long)getMixerRatio() /*7*/, CURRENT_FILENAME /*12*/,
+                 getProgress_percent() /*3*/, (unsigned long)getProgress_seconds_elapsed() /*6*/);
 
-        sendToDisplay(output);
+        if (!messageSent || strcmp(output, lastMessage)) {
+            sendToDisplay(output);
+            strcpy(lastMessage, output);
+            messageSent = true;
+        }
     }
 
     void TouchDisplay::send_L22_MixingStatus()
@@ -139,41 +160,41 @@ namespace Geeetech
         // send L11 and fake L1 as it is required as well :(
         char probeZOffset[7];
         dtostrf(getProbeOffset_mm(ExtUI::Z), 0, 2, probeZOffset);
-        snprintf(output, sizeof(output), "%s", probeZOffset);
-        sendToDisplay(("L1 Z" + (String)output).c_str());
-        sendToDisplay(("L11 P0 S" + (String)output).c_str());
+        snprintf(output, sizeof(output), "L1 Z%s", probeZOffset);
+        sendToDisplay(output);
+        snprintf(output, sizeof(output), "L11 P0 S%s", probeZOffset);
+        sendToDisplay(output);
     }
 
     void TouchDisplay::send_L14_MessageToDisplay(const String &message)
     {
-        sendToDisplay(("L14 " + message).c_str());
+        snprintf(output, sizeof(output), "L14 %s", message.c_str());
+        sendToDisplay(output);
     }
 
     void TouchDisplay::send_L18_UserMessage(const UserMessageCode &code)
     {
-        sendToDisplay(("L18 P26 S" + (String)code).c_str());
+        snprintf(output, sizeof(output), "L18 P26 S%d", (int)code);
+        sendToDisplay(output);
     }
 
     void TouchDisplay::send_L24_SettingsStatus()
     {
-        const String start = "L24 P";
         char varA[10];
         char varB[10];
         char varC[10];
         char varD[10];
 
         // steps/mm: A=X, B=Y, C=Z, D=E(one for all)
-        const String p0 = start + "0 A%s B%s C%s D%s";
         dtostrf(planner.settings.axis_steps_per_mm[X_AXIS], 0, 2, varA);
         dtostrf(planner.settings.axis_steps_per_mm[Y_AXIS], 0, 2, varB);
         dtostrf(planner.settings.axis_steps_per_mm[Z_AXIS], 0, 2, varC);
         dtostrf(planner.settings.axis_steps_per_mm[E_AXIS], 0, 2, varD);
-        snprintf(output, sizeof(output), p0.c_str(), varA, varB, varC, varD);
+        snprintf(output, sizeof(output), "L24 P0 A%s B%s C%s D%s", varA, varB, varC, varD);
         sendToDisplay(output);
 
         // velocity (mm/s): A=X-VMax B=Y-VMax C=Z-VMax D=E-VMax E=VMin F=VTravel
-        const String p1 = start + "1 A%d B%d C%d D%d E%d F%d";
-        snprintf(output, sizeof(output), p1.c_str(),
+        snprintf(output, sizeof(output), "L24 P1 A%d B%d C%d D%d E%d F%d",
                 /*A*/ (int)planner.settings.max_feedrate_mm_s[X_AXIS],
                 /*B*/ (int)planner.settings.max_feedrate_mm_s[Y_AXIS],
                 /*C*/ (int)planner.settings.max_feedrate_mm_s[Z_AXIS],
@@ -183,8 +204,7 @@ namespace Geeetech
         sendToDisplay(output);
 
         // acceleration (steps/s2): A=Accel, B=A-Retract, C=X-Max accel, D=Y-Max accel, E=Z-Max accel, F=E-Max accel
-        const String p2 = start + "2 A%d B%d C%d D%d E%d F%d";
-        snprintf(output, sizeof(output), p2.c_str(),
+        snprintf(output, sizeof(output), "L24 P2 A%d B%d C%d D%d E%d F%d",
                 /*A*/ (int)planner.settings.acceleration,
                 /*B*/ (int)fwretract.settings.retract_feedrate_mm_s,
                 /*C*/ (int)planner.settings.max_acceleration_mm_per_s2[X_AXIS],
@@ -194,25 +214,22 @@ namespace Geeetech
         sendToDisplay(output);
 
         //jerk (mm/s): A=Vx-jerk, B=Vy-jerk, C=Vz-jerk, D=Ve-jerk
-        const String p3 = start + "3 A%s B%s C%s D%s";
         dtostrf(planner.max_jerk.x, 0, 2, varA);
         dtostrf(planner.max_jerk.y, 0, 2, varB);
         dtostrf(planner.max_jerk.z, 0, 2, varC);
         dtostrf(planner.max_jerk.e, 0, 2, varD);
-        snprintf(output, sizeof(output), p3.c_str(), varA, varB, varC, varD);
+        snprintf(output, sizeof(output), "L24 P3 A%s B%s C%s D%s", varA, varB, varC, varD);
         sendToDisplay(output);
 
         // babystep (mm): A=Z
-        const String p5 = start + "5 A%s";
         dtostrf(temporaryBabystepValue, 0, 2, varA);
-        snprintf(output, sizeof(output), p5.c_str(), varA);
+        snprintf(output, sizeof(output), "L24 P5 A%s", varA);
         sendToDisplay(output);
 
         // double-z home offset
-        const String p6 = start + "6 A%s B%s";
         dtostrf(endstops.z2_endstop_adj > 0 ? endstops.z2_endstop_adj : 0.0, 0, 2, varA);
         dtostrf(endstops.z2_endstop_adj < 0 ? -endstops.z2_endstop_adj : 0.0, 0, 2, varB);
-        snprintf(output, sizeof(output), p6.c_str(), varA, varB);
+        snprintf(output, sizeof(output), "L24 P6 A%s B%s", varA, varB);
         sendToDisplay(output);
     }
 
@@ -223,10 +240,9 @@ namespace Geeetech
             LCD_SERIAL.write("N-0 ");
 
             uint8_t checksum = 115; // checksum of line sent above
-            for (unsigned int i = 0; i < strlen(message); i++)
-            {
-                checksum ^= message[i];
-                LCD_SERIAL.write(message[i]);
+            for (const char *p = message; *p; ++p) {
+                checksum ^= *p;
+                LCD_SERIAL.write(*p);
             }
             char number[5];
             sprintf(number, "*%d", checksum);

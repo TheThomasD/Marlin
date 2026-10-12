@@ -70,6 +70,7 @@ namespace Geeetech
                     endstops.z2_endstop_adj += 0.01;
             }
         }
+        settingsStatusPending = true;
     }
 } // namespace Geeetech
 

@@ -69,11 +69,11 @@ namespace ExtUI
     Display.requestStatusUpdate();
   }
 
-  void onFactoryReset() { Display.requestStatusUpdate(); }
+  void onFactoryReset() { Display.requestStatusUpdate(true); }
   void onStoreSettings(char *) {}
-  void onSettingsStored(bool) { Display.requestStatusUpdate(); }
+  void onSettingsStored(bool) { Display.requestStatusUpdate(true); }
   void onLoadSettings(const char *) {}
-  void onSettingsLoaded(bool) { Display.requestStatusUpdate(); }
+  void onSettingsLoaded(bool) { Display.requestStatusUpdate(true); }
   void onPostprocessSettings() {}
   void onConfigurationStoreWritten(bool) {}
   void onConfigurationStoreRead(bool) {}

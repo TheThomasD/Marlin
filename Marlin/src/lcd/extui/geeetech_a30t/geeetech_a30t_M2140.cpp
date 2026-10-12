@@ -44,6 +44,7 @@ namespace Geeetech
     {
         if (command.parameters[R].equals("0"))
             settings.load();
+        settingsStatusPending = true;
     }
 } // namespace Geeetech
 

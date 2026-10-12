@@ -47,6 +47,7 @@ namespace Geeetech
     bool TouchDisplay::shouldWaitForCommand = false;
     bool TouchDisplay::simulatedAutoLevelSwitchOn = true;
     CommandType TouchDisplay::activeCommand = Unknown;
+    bool TouchDisplay::settingsStatusPending = true;
 
     void TouchDisplay::startup()
     {
@@ -71,7 +72,7 @@ namespace Geeetech
         const millis_t currentTimeMs = millis();
         if (!shouldWaitForCommand)
         {
-            UiCommand command = {};
+            static UiCommand command = {};
             if (receiveCommand(command))
             {
 
@@ -116,7 +117,9 @@ namespace Geeetech
         send_L18_UserMessage(code);
     }
 
-    void TouchDisplay::requestStatusUpdate() {
+    void TouchDisplay::requestStatusUpdate(const bool settingsChanged) {
+        if (settingsChanged)
+            settingsStatusPending = true;
         setNextSendMs(millis());
     }
 
