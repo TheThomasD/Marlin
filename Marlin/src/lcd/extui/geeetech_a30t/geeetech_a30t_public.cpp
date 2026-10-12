@@ -42,6 +42,8 @@ namespace Geeetech
     const char *const COMMAND_STRINGS[] = {FOREACH_COMMAND(GENERATE_STRING)};
     const char *const PARAMETER_STRINGS[] = {FOREACH_PARAMETER(GENERATE_STRING)};
 
+    uint16_t TouchDisplay::mixingMode = 0;
+    bool TouchDisplay::mixerStatusPending = true;
     bool TouchDisplay::shouldWaitForCommand = false;
     bool TouchDisplay::simulatedAutoLevelSwitchOn = true;
     CommandType TouchDisplay::activeCommand = Unknown;

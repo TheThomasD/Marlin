@@ -74,7 +74,40 @@ namespace Geeetech
                 String receivedLine(line);
                 const int checksumStart = receivedLine.lastIndexOf('*');
                 if (checksumStart > 0)
+                {
+                    const int receivedLength = receivedLine.length();
+                    uint16_t expectedChecksum = 0;
+                    bool validChecksum = checksumStart + 1 < receivedLength;
+                    for (int i = checksumStart + 1; i < receivedLength; i++)
+                    {
+                        const char digit = receivedLine.charAt(i);
+                        if (digit < '0' || digit > '9')
+                        {
+                            validChecksum = false;
+                            break;
+                        }
+                        expectedChecksum = expectedChecksum * 10 + digit - '0';
+                        if (expectedChecksum > 255)
+                        {
+                            validChecksum = false;
+                            break;
+                        }
+                    }
+
+                    uint8_t actualChecksum = 0;
+                    for (int i = 0; i < checksumStart; i++)
+                        actualChecksum ^= receivedLine.charAt(i);
+
+                    if (!validChecksum || actualChecksum != expectedChecksum)
+                    {
+#ifdef GEEETECH_DISPLAY_DEBUG
+                        SERIAL_ECHOLNPGM("Rejected display command with invalid checksum");
+#endif
+                        continue;
+                    }
+
                     receivedLine.remove(checksumStart);
+                }
 
                 // Some display commands contain the N-0 prefix twice.
                 while (receivedLine.startsWith("N-0 "))

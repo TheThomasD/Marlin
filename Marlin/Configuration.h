@@ -3028,6 +3028,10 @@
 #define GEEETECH_A30T_TFT
 #if ENABLED(GEEETECH_A30T_TFT)
   #define LCD_SERIAL_PORT 2 // Default is 2 for Geeetech A30T
+  // Optionally replace G29 commands sent from the display. Separate multiple commands with \n.
+  // Any parameters on the original G29 are not forwarded to the replacement.
+  // If undefined, the display's G29 command is passed to Marlin unchanged.
+  //#define GEEETECH_A30T_TFT_G29_REPLACEMENT "G28\nG29"
 #endif
 
 //

@@ -48,6 +48,7 @@ namespace Geeetech
         mixer.collector[1] = ((uint8_t)(value >> 8)) & COLOR_MASK;
         mixer.collector[2] = (uint8_t)(value >> 16);
         mixer.normalize();
+        mixerStatusPending = true;
     }
 } // namespace Geeetech
 

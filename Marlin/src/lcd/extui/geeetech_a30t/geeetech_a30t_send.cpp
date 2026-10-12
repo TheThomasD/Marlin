@@ -61,6 +61,10 @@ namespace Geeetech
             }
             send_L2_TempInfo();
             send_L3_PrintInfo();
+            if (mixerStatusPending) {
+                send_L22_MixingStatus();
+                mixerStatusPending = false;
+            }
             nextStatusSend = currentTimeMs + SEND_CYCLE_IN_MS;
         }
     }
@@ -105,6 +109,13 @@ namespace Geeetech
                  simulatedAutoLevelSwitchOn, (unsigned long)getMixerRatio(), CURRENT_FILENAME,
                  getProgress_percent(), (unsigned long)getProgress_seconds_elapsed());
 
+        sendToDisplay(output);
+    }
+
+    void TouchDisplay::send_L22_MixingStatus()
+    {
+        snprintf(output, sizeof(output), "L22 MS:%u MR:%lu SP:100 EP:100 SH:0.00 EH:0.00",
+                 mixingMode, (unsigned long)getMixerRatio());
         sendToDisplay(output);
     }
 

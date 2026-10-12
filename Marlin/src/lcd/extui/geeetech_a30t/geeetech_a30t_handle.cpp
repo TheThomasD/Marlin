@@ -41,11 +41,37 @@ using namespace ExtUI;
 namespace Geeetech
 {
 
+    static bool isGCodeCommand(const String &command, const char *const code)
+    {
+        String trimmedCommand = command;
+        trimmedCommand.trim();
+        const size_t codeLength = strlen(code);
+        if (!trimmedCommand.startsWith(code))
+            return false;
+        if (trimmedCommand.length() == codeLength)
+            return true;
+
+        const char separator = trimmedCommand.charAt(codeLength);
+        return separator == ' ' || separator == '\t' || separator == ';';
+    }
+
     void TouchDisplay::handleGcode(const String &gcode)
     {
 #ifdef GEEETECH_DISPLAY_DEBUG
         SERIAL_ECHOLNPGM("Queueing command: ", gcode.c_str());
 #endif
+#ifdef GEEETECH_A30T_TFT_G29_REPLACEMENT
+        if (isGCodeCommand(gcode, "G29")) {
+            queue.enqueue_now(F(GEEETECH_A30T_TFT_G29_REPLACEMENT));
+            return;
+        }
+#endif
+        if (isGCodeCommand(gcode, "M163") || isGCodeCommand(gcode, "M164")
+            || isGCodeCommand(gcode, "M165") || isGCodeCommand(gcode, "M166"))
+        {
+            mixerStatusPending = true;
+            setNextSendMs(millis() + SEND_CYCLE_IN_MS);
+        }
         queue.enqueue_one_now(gcode.c_str());
     }
 
@@ -87,6 +113,9 @@ namespace Geeetech
             break;
         case M2135:
             handle_M2135_SetColorMix(command);
+            break;
+        case M2138:
+            handle_M2138_SetMixingMode(command);
             break;
         case M2140:
             handle_M2140_MotionParams(command);
