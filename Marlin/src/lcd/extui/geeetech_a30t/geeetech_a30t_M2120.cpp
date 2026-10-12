@@ -45,7 +45,10 @@ namespace Geeetech
         switch (command.parameters[P].charAt(0))
         {
         case '0': // auto leveling on/off
-            simulatedAutoLevelSwitchOn = '1' == command.parameters[S].charAt(0);
+            setLevelingActive('1' == command.parameters[S].charAt(0));
+            simulatedAutoLevelSwitchOn = getLevelingActive();
+            if ('1' == command.parameters[S].charAt(0) && !simulatedAutoLevelSwitchOn)
+                SERIAL_ERROR_MSG("Bed leveling could not be enabled: invalid mesh.");
             break;
         case '1': // control probe
             handle_M2120_P1_ProbeControl(command.parameters[S].charAt(0));
@@ -99,22 +102,40 @@ namespace Geeetech
 
     void TouchDisplay::handle_M2120_P2_StoreZOffset(const String &sParameter)
     {
-        setProbeOffset_mm(strtof(sParameter.c_str(), nullptr), ExtUI::Z);
+        const float_t offset = strtof(sParameter.c_str(), nullptr);
+        if (!WITHIN(offset, Z_PROBE_OFFSET_RANGE_MIN, Z_PROBE_OFFSET_RANGE_MAX)) {
+            SERIAL_ERROR_MSG("Z probe offset out of range (", Z_PROBE_OFFSET_RANGE_MIN, " to ", Z_PROBE_OFFSET_RANGE_MAX, ").");
+            return;
+        }
+        setProbeOffset_mm(offset, ExtUI::Z);
+        settingsStatusPending = true;
         settings.save();
     }
 
     void TouchDisplay::handle_M2120_P3_MoveUp(const char &sParameter)
     {
-        float_t height = mapSParameterToHeight(sParameter);
-        setProbeOffset_mm(getProbeOffset_mm(ExtUI::Z) + height, ExtUI::Z);
+        const float_t height = mapSParameterToHeight(sParameter);
+        const float_t offset = getProbeOffset_mm(ExtUI::Z) + height;
+        if (!WITHIN(offset, Z_PROBE_OFFSET_RANGE_MIN, Z_PROBE_OFFSET_RANGE_MAX)) {
+            SERIAL_ERROR_MSG("Z probe offset out of range (", Z_PROBE_OFFSET_RANGE_MIN, " to ", Z_PROBE_OFFSET_RANGE_MAX, ").");
+            return;
+        }
+        setProbeOffset_mm(offset, ExtUI::Z);
         do_blocking_move_to_z(current_position.z + height);
+        settingsStatusPending = true;
     }
 
     void TouchDisplay::handle_M2120_P4_MoveDown(const char &sParameter)
     {
-        float_t height = mapSParameterToHeight(sParameter);
-        setProbeOffset_mm(getProbeOffset_mm(ExtUI::Z) - height, ExtUI::Z);
+        const float_t height = mapSParameterToHeight(sParameter);
+        const float_t offset = getProbeOffset_mm(ExtUI::Z) - height;
+        if (!WITHIN(offset, Z_PROBE_OFFSET_RANGE_MIN, Z_PROBE_OFFSET_RANGE_MAX)) {
+            SERIAL_ERROR_MSG("Z probe offset out of range (", Z_PROBE_OFFSET_RANGE_MIN, " to ", Z_PROBE_OFFSET_RANGE_MAX, ").");
+            return;
+        }
+        setProbeOffset_mm(offset, ExtUI::Z);
         do_blocking_move_to_z(current_position.z - height);
+        settingsStatusPending = true;
     }
 
     void TouchDisplay::handle_M2120_P6_CenterNozzle()
@@ -124,14 +145,19 @@ namespace Geeetech
 
     void TouchDisplay::handle_M2120_P7_ProbeCenter()
     {
+        setLevelingActive(false);
+        simulatedAutoLevelSwitchOn = getLevelingActive();
         setProbeOffset_mm(0, ExtUI::Z);
-        home_if_needed(false);
+        settingsStatusPending = true;
+        gcode.home_all_axes(false);
         do_blocking_move_to_z(5);
-        float_t probeZOffset = probe.probe_at_point(X_CENTER, Y_CENTER);
-        float_t newProbeOffset = -probeZOffset + 5;
-        setProbeOffset_mm(newProbeOffset, ExtUI::Z);
+        const float_t measuredZ = probe.probe_at_point(X_CENTER, Y_CENTER, PROBE_PT_STOW);
+        if (isnan(measuredZ)) {
+            SERIAL_ERROR_MSG("Probe measurement failed.");
+            return;
+        }
+        do_blocking_move_to_z(5);
         do_blocking_move_to_xy(X_CENTER, Y_CENTER);
-        do_blocking_move_to_z(5 - home_offset.z);
     }
 
     float_t TouchDisplay::mapSParameterToHeight(const char &sParameter)
@@ -139,7 +165,7 @@ namespace Geeetech
         switch (sParameter)
         {
         case '0':
-            return 10; // this is waaaaaay to much!
+            return 1.0; // The display labels this step 10mm, but sends a 1mm adjustment.
         case '1':
             return 1;
         case '2':
