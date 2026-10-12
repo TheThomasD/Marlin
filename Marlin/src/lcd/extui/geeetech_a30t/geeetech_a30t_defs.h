@@ -26,10 +26,11 @@
  */
 
 // settings
-#define GEEETECH_DISPLAY_DEBUG // comment out for production
 #define SEND_CYCLE_IN_MS 1000
 #define EXTRUDE_CYCLE_IN_MS 1000
 #define SWITCH_EXTRUDER_CYCLE_IN_MS 5000
+#define GEEETECH_A30T_TFT_POWER_PIN PD12
+#define GEEETECH_A30T_TFT_BAUDRATE 115200
 
 // enum, string array, count, boolean generation
 #define GENERATE_ENUM(ENUM) ENUM,

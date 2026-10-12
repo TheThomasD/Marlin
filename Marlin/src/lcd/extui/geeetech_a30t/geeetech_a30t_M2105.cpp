@@ -99,7 +99,6 @@ namespace Geeetech
                 else
                     currentCleaningExtruder = E0;
             }
-            delay(20);
             if (ELAPSED(currentTimeMs, nextExtrude))
             {
                 nextExtrude = currentTimeMs + EXTRUDE_CYCLE_IN_MS;

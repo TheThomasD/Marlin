@@ -71,15 +71,15 @@ namespace Geeetech
     {
         FOREACH_COMMAND(GENERATE_ENUM)
     };
-    static const char *COMMAND_STRINGS[] = {FOREACH_COMMAND(GENERATE_STRING)};
-    static const uint8_t COMMANDS_COUNT = FOREACH_COMMAND(GENERATE_COUNT);
+    extern const char *const COMMAND_STRINGS[];
+    enum : uint8_t { COMMANDS_COUNT = FOREACH_COMMAND(GENERATE_COUNT) };
 
     enum Parameter
     {
         FOREACH_PARAMETER(GENERATE_ENUM)
     };
-    static const char *PARAMETER_STRINGS[] = {FOREACH_PARAMETER(GENERATE_STRING)};
-    static const uint8_t PARAMETERS_COUNT = FOREACH_PARAMETER(GENERATE_COUNT);
+    extern const char *const PARAMETER_STRINGS[];
+    enum : uint8_t { PARAMETERS_COUNT = FOREACH_PARAMETER(GENERATE_COUNT) };
 
     enum EMode {
         FOREACH_E_MODE(GENERATE_ENUM)
@@ -118,6 +118,7 @@ namespace Geeetech
         static void waitForCommand(const bool ignore);
         static void showStatus(const char *const message);
         static void showUserMessage(const UserMessageCode &code);
+        static void requestStatusUpdate();
 
     private:
         static bool shouldWaitForCommand;
@@ -139,13 +140,12 @@ namespace Geeetech
         static void send_L14_MessageToDisplay(const String &message);
         static void send_L18_UserMessage(const UserMessageCode &code);
         static void send_L24_SettingsStatus();
-        static void sendToDisplay(PGM_P message, const bool addChecksum = true);
+        static void sendToDisplay(const char *const message, const bool addChecksum = true);
         static uint32_t getMixerRatio();
         static uint8_t getPrintStatus();
 
         // receive methods
-        static UiCommand receiveCommand();
-        static String receiveCommandString();
+        static bool receiveCommand(UiCommand &command);
         static UiCommand parseCommandString(const String &commandString);
         static CommandType parseCommandType(const String &commandString);
         static void parseCommandParameters(UiCommand &command, const String &commandString);

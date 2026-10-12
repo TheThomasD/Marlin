@@ -40,53 +40,68 @@ namespace ExtUI
 
   void onFilamentRunout(const extruder_t extruder) { Display.showUserMessage(NoFilament); }
 
-  void onPrinterKilled(FSTR_P const error, FSTR_P const component) {}
+  void onPrinterKilled(FSTR_P const error, FSTR_P const) { Display.showStatus(FTOP(error)); }
 
-  void onPrintTimerStarted() {}
-  void onPrintTimerPaused() {}
-  void onPrintTimerStopped() {}
-  void onPrintDone() {}
+  void onPrintTimerStarted() { Display.requestStatusUpdate(); }
+  void onPrintTimerPaused() { Display.requestStatusUpdate(); }
+  void onPrintTimerStopped() { Display.requestStatusUpdate(); }
+  void onPrintDone() { Display.requestStatusUpdate(); }
 
   void onStatusChanged(const char *const msg) { Display.showStatus(msg); }
 
-  void onMediaInserted() {}
-  void onMediaError() {}
-  void onMediaRemoved() { Display.showUserMessage(SdRemoved); }
+  void onMediaInserted() { Display.requestStatusUpdate(); }
+  void onMediaError() { Display.showStatus("Media error"); }
+  void onMediaRemoved() {
+    Display.showUserMessage(SdRemoved);
+    Display.requestStatusUpdate();
+  }
 
   void onPlayTone(const uint16_t, const uint16_t) {}
 
-  void onUserConfirmRequired(const char *const msg){};
+  void onUserConfirmRequired(const char *const msg) {
+    Display.showUserMessage(AskWaitForUser);
+    Display.showStatus(msg);
+  }
 
   void onHomingStart() { Display.waitForCommand(true); }
-  void onHomingDone() { Display.waitForCommand(false); }
+  void onHomingDone() {
+    Display.waitForCommand(false);
+    Display.requestStatusUpdate();
+  }
 
-  void onFactoryReset() {}
+  void onFactoryReset() { Display.requestStatusUpdate(); }
   void onStoreSettings(char *) {}
-  void onSettingsStored(bool) {}
+  void onSettingsStored(bool) { Display.requestStatusUpdate(); }
   void onLoadSettings(const char *) {}
-  void onSettingsLoaded(bool) {}
+  void onSettingsLoaded(bool) { Display.requestStatusUpdate(); }
   void onPostprocessSettings() {}
   void onConfigurationStoreWritten(bool) {}
   void onConfigurationStoreRead(bool) {}
 
-  void onLevelingStart() {}
-  void onLevelingDone() {}
-  void onMeshUpdate(const int8_t xpos, const int8_t ypos, const_float_t zval) {}
-  void onMeshUpdate(const int8_t xpos, const int8_t ypos, const ExtUI::probe_state_t state)
-  {
-    Display.waitForCommand(ExtUI::probe_state_t::G29_FINISH == state);
-  }
+  #if HAS_MESH
+    void onLevelingStart() { Display.waitForCommand(true); }
+    void onLevelingDone() {
+      Display.waitForCommand(false);
+      Display.requestStatusUpdate();
+    }
+    void onMeshUpdate(const int8_t, const int8_t, const_float_t) {}
+    void onMeshUpdate(const int8_t, const int8_t, const ExtUI::probe_state_t state) {
+      if (state == ExtUI::G29_START)
+        Display.waitForCommand(true);
+      else if (state == ExtUI::G29_FINISH) {
+        Display.waitForCommand(false);
+        Display.requestStatusUpdate();
+      }
+    }
+  #endif
 
-  void onPowerLossResume() {}
+  #if ENABLED(POWER_LOSS_RECOVERY)
+    void onPowerLossResume() {}
+  #endif
 
   void onSteppersDisabled() {}
   void onSteppersEnabled() {}
 
-#if ENABLED(POWER_LOSS_RECOVERY)
-  void onPowerLossResume()
-  {
-  }
-#endif
 #if HAS_PID_HEATING
   void onPidTuning(const result_t rst)
   {

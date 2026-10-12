@@ -86,12 +86,17 @@ namespace Geeetech
 
     CommandType TouchDisplay::parseCommandType(const String &commandString)
     {
+        if (!commandString.length())
+            return Unknown;
+
         const char firstChar = commandString.charAt(0);
 
         if ('M' == firstChar || 'L' == firstChar)        // check proprietary commands first
             for (uint8_t i = 2; i < COMMANDS_COUNT; i++) // start at 2 to exclude Unknown and GCode
             {
-                if (commandString.startsWith(COMMAND_STRINGS[i]))
+                const size_t commandLength = strlen(COMMAND_STRINGS[i]);
+                if (commandString.startsWith(COMMAND_STRINGS[i])
+                    && (commandString.length() == commandLength || commandString.charAt(commandLength) == ' '))
                     return (CommandType)i;
             }
 

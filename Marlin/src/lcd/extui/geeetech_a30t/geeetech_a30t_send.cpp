@@ -32,7 +32,7 @@
 
 #if ENABLED(GEEETECH_A30T_TFT)
 
-#ifndef MAX(a, b)
+#ifndef MAX
 #define MAX(a, b)  (((a) > (b)) ? (a) : (b))
 #endif
 
@@ -74,8 +74,8 @@ namespace Geeetech
         dtostrf(currentLogicalPos.y, 0, 3, y);
         dtostrf(currentLogicalPos.z, 0, 3, z);
 
-        sprintf(output, "L1 X%s Y%s Z%s F%d",
-                x /*7*/, y /*7*/, z /*7*/, FEEDRATE /*3*/);
+        snprintf(output, sizeof(output), "L1 X%s Y%s Z%s F%d",
+                 x, y, z, FEEDRATE);
         sendToDisplay(output);
     }
 
@@ -88,29 +88,29 @@ namespace Geeetech
         dtostrf(getActualTemp_celsius(E0), 0, 1, e0CurrentTemp);
         dtostrf(getTargetTemp_celsius(E0), 0, 1, e0TargetTemp);
 
-        sprintf(output, "L2 B:%s /%s /%d T0:%s /%s /%d T1:%s /%s /%d T2:%s /%s /%d SD:%d F0:%d F2:50 R:%d FR:%d",
-                bedCurrentTemp /*5*/, bedTargetTemp /*5*/, BED_ACTIVE /*1*/,
-                e0CurrentTemp /*5*/, e0TargetTemp /*5*/, E0_ACTIVE /*1*/,
-                e0CurrentTemp /*5*/, e0TargetTemp /*5*/, E0_ACTIVE /*1*/,
-                e0CurrentTemp /*5*/, e0TargetTemp /*5*/, E0_ACTIVE /*1*/,
-                SD_ACTIVE /*1*/, F0_SPEED /*3*/, PRINT_SPEED /*3*/, FEEDRATE /*3*/);
+        snprintf(output, sizeof(output), "L2 B:%s /%s /%d T0:%s /%s /%d T1:%s /%s /%d T2:%s /%s /%d SD:%d F0:%d F2:50 R:%d FR:%d",
+                 bedCurrentTemp, bedTargetTemp, BED_ACTIVE,
+                 e0CurrentTemp, e0TargetTemp, E0_ACTIVE,
+                 e0CurrentTemp, e0TargetTemp, E0_ACTIVE,
+                 e0CurrentTemp, e0TargetTemp, E0_ACTIVE,
+                 SD_ACTIVE, F0_SPEED, PRINT_SPEED, FEEDRATE);
 
         sendToDisplay(output);
     }
 
     void TouchDisplay::send_L3_PrintInfo()
     {
-        sprintf(output, "L3 PS:%d VL:0 MT:%d FT:%d AL:%d ST:1 WF:0 MR:%ld FN:%s PG:%d TM:%ld LA:0 LC:0",
-                getPrintStatus() /*1*/, MOTOR_TENSION_STATUS /*1*/, FILAMENT_SENSOR_STATUS /*3*/,
-                simulatedAutoLevelSwitchOn /*1*/, getMixerRatio() /*7*/, CURRENT_FILENAME /*12*/,
-                getProgress_percent() /*3*/, getProgress_seconds_elapsed() /*6*/);
+        snprintf(output, sizeof(output), "L3 PS:%d VL:0 MT:%d FT:%d AL:%d ST:1 WF:0 MR:%lu FN:%.64s PG:%d TM:%lu LA:0 LC:0",
+                 getPrintStatus(), MOTOR_TENSION_STATUS, FILAMENT_SENSOR_STATUS,
+                 simulatedAutoLevelSwitchOn, (unsigned long)getMixerRatio(), CURRENT_FILENAME,
+                 getProgress_percent(), (unsigned long)getProgress_seconds_elapsed());
 
         sendToDisplay(output);
     }
 
     void TouchDisplay::send_L9_FirmwareInfo()
     {
-        sprintf(output, "L9 DN:Geeetech;DM:A30T;SN:TheThomasD;FV:%s;PV:320.00 x 320.00 x 420.00;HV:GTM32_103_V1;", getFirmwareName_str());
+        snprintf(output, sizeof(output), "L9 DN:Geeetech;DM:A30T;SN:TheThomasD;FV:%s;PV:320.00 x 320.00 x 420.00;HV:GTM32_103_V1;", getFirmwareName_str());
 
         sendToDisplay(output);
     }
@@ -119,7 +119,7 @@ namespace Geeetech
     {
         char zOffset[7];
         dtostrf(-home_offset[Z_AXIS], 0, 2, zOffset);
-        sprintf(output, "L10 S%s", zOffset);
+        snprintf(output, sizeof(output), "L10 S%s", zOffset);
         sendToDisplay(output);
     }
 
@@ -128,7 +128,7 @@ namespace Geeetech
         // send L11 and fake L1 as it is required as well :(
         char probeZOffset[7];
         dtostrf(getProbeOffset_mm(ExtUI::Z), 0, 2, probeZOffset);
-        sprintf(output, "%s", probeZOffset);
+        snprintf(output, sizeof(output), "%s", probeZOffset);
         sendToDisplay(("L1 Z" + (String)output).c_str());
         sendToDisplay(("L11 P0 S" + (String)output).c_str());
     }
@@ -157,12 +157,12 @@ namespace Geeetech
         dtostrf(planner.settings.axis_steps_per_mm[Y_AXIS], 0, 2, varB);
         dtostrf(planner.settings.axis_steps_per_mm[Z_AXIS], 0, 2, varC);
         dtostrf(planner.settings.axis_steps_per_mm[E_AXIS], 0, 2, varD);
-        sprintf(output, p0.c_str(), varA, varB, varC, varD);
+        snprintf(output, sizeof(output), p0.c_str(), varA, varB, varC, varD);
         sendToDisplay(output);
 
         // velocity (mm/s): A=X-VMax B=Y-VMax C=Z-VMax D=E-VMax E=VMin F=VTravel
         const String p1 = start + "1 A%d B%d C%d D%d E%d F%d";
-        sprintf(output, p1.c_str(),
+        snprintf(output, sizeof(output), p1.c_str(),
                 /*A*/ (int)planner.settings.max_feedrate_mm_s[X_AXIS],
                 /*B*/ (int)planner.settings.max_feedrate_mm_s[Y_AXIS],
                 /*C*/ (int)planner.settings.max_feedrate_mm_s[Z_AXIS],
@@ -173,7 +173,7 @@ namespace Geeetech
 
         // acceleration (steps/s2): A=Accel, B=A-Retract, C=X-Max accel, D=Y-Max accel, E=Z-Max accel, F=E-Max accel
         const String p2 = start + "2 A%d B%d C%d D%d E%d F%d";
-        sprintf(output, p2.c_str(),
+        snprintf(output, sizeof(output), p2.c_str(),
                 /*A*/ (int)planner.settings.acceleration,
                 /*B*/ (int)fwretract.settings.retract_feedrate_mm_s,
                 /*C*/ (int)planner.settings.max_acceleration_mm_per_s2[X_AXIS],
@@ -188,24 +188,24 @@ namespace Geeetech
         dtostrf(planner.max_jerk.y, 0, 2, varB);
         dtostrf(planner.max_jerk.z, 0, 2, varC);
         dtostrf(planner.max_jerk.e, 0, 2, varD);
-        sprintf(output, p3.c_str(), varA, varB, varC, varD);
+        snprintf(output, sizeof(output), p3.c_str(), varA, varB, varC, varD);
         sendToDisplay(output);
 
         // babystep (mm): A=Z
         const String p5 = start + "5 A%s";
         dtostrf(temporaryBabystepValue, 0, 2, varA);
-        sprintf(output, p5.c_str(), varA);
+        snprintf(output, sizeof(output), p5.c_str(), varA);
         sendToDisplay(output);
 
         // double-z home offset
         const String p6 = start + "6 A%s B%s";
         dtostrf(endstops.z2_endstop_adj > 0 ? endstops.z2_endstop_adj : 0.0, 0, 2, varA);
         dtostrf(endstops.z2_endstop_adj < 0 ? -endstops.z2_endstop_adj : 0.0, 0, 2, varB);
-        sprintf(output, p6.c_str(), varA, varB);
+        snprintf(output, sizeof(output), p6.c_str(), varA, varB);
         sendToDisplay(output);
     }
 
-    void TouchDisplay::sendToDisplay(PGM_P message, const bool addChecksum)
+    void TouchDisplay::sendToDisplay(const char *const message, const bool addChecksum)
     {
         if (addChecksum)
         {

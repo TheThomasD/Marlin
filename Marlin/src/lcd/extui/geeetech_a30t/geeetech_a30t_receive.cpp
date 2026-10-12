@@ -40,26 +40,63 @@ using namespace ExtUI;
 
 namespace Geeetech
 {
-    UiCommand TouchDisplay::receiveCommand()
+    bool TouchDisplay::receiveCommand(UiCommand &command)
     {
-        return parseCommandString(receiveCommandString());
-    }
+        static char line[128];
+        static uint8_t length = 0;
+        static bool discardLine = false;
 
-    String TouchDisplay::receiveCommandString()
-    {
-        String receivedLine = LCD_SERIAL.readStringUntil('\n');
-        int lastStarChar = receivedLine.lastIndexOf('*');
+        while (LCD_SERIAL.available() > 0)
+        {
+            const int next = LCD_SERIAL.read();
+            if (next < 0)
+                break;
 
-        // just remove checksum without checking 8-0
-        String result = receivedLine;
-        if (lastStarChar > 0)
-            result = receivedLine.substring(0, lastStarChar);
+            const char c = (char)next;
+            if (c == '\r')
+                continue;
 
-        // have to do "while" here because at least one command uses two times "N-0" :-(
-        while (result.startsWith("N-0 "))
-            result = result.substring(4);
+            if (c == '\n')
+            {
+                if (discardLine)
+                {
+#ifdef GEEETECH_DISPLAY_DEBUG
+                    SERIAL_ECHOLNPGM("Dropped oversized display command");
+#endif
+                    discardLine = false;
+                    length = 0;
+                    continue;
+                }
 
-        return result;
+                line[length] = '\0';
+                length = 0;
+
+                String receivedLine(line);
+                const int checksumStart = receivedLine.lastIndexOf('*');
+                if (checksumStart > 0)
+                    receivedLine.remove(checksumStart);
+
+                // Some display commands contain the N-0 prefix twice.
+                while (receivedLine.startsWith("N-0 "))
+                    receivedLine = receivedLine.substring(4);
+
+                command = parseCommandString(receivedLine);
+                return true;
+            }
+
+            if (discardLine)
+                continue;
+
+            if (length >= sizeof(line) - 1)
+            {
+                discardLine = true;
+                length = 0;
+            }
+            else
+                line[length++] = c;
+        }
+
+        return false;
     }
 
 } // namespace Geeetech

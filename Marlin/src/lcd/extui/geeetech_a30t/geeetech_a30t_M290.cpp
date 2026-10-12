@@ -46,20 +46,11 @@ namespace Geeetech
 
     void TouchDisplay::handle_M290_Babystep(const UiCommand &command)
     {
-        if (((String) "0").equals(command.parameters[Z]))
-        {
-            temporaryBabystepValue = 0.0;
-        }
-        else
-        {
-            const float zOffset = strtof(command.parameters[Z].c_str(), nullptr);
-            
-            if (zOffset > temporaryBabystepValue)
-                babystep.add_mm(Z_AXIS, 0.01);
-            else
-                babystep.add_mm(Z_AXIS, -0.01);
-            temporaryBabystepValue = zOffset;
-        }
+        const float_t zOffset = strtof(command.parameters[Z].c_str(), nullptr);
+        const float_t difference = zOffset - temporaryBabystepValue;
+        if (difference != 0)
+            babystep.add_mm(Z_AXIS, difference);
+        temporaryBabystepValue = zOffset;
     }
 } // namespace Geeetech
 

@@ -46,12 +46,14 @@ namespace Geeetech
         mixer.populate_block(block);
 
         const float_t sum = block[0] + block[1] + block[2];
+        if (sum <= 0)
+            return 0;
 
         uint8_t percentageE0 = rintf(100.0 * block[0] / sum);
         uint8_t percentageE1 = rintf(100.0 * block[1] / sum);
         uint8_t percentageE2 = rintf(100.0 * block[2] / sum);
 
-        const uint8_t diff = 100 - percentageE0 - percentageE1 - percentageE2;
+        const int16_t diff = 100 - percentageE0 - percentageE1 - percentageE2;
 
         if (diff != 0)
         {

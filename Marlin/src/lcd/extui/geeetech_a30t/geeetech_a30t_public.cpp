@@ -39,6 +39,9 @@ using namespace ExtUI;
 
 namespace Geeetech
 {
+    const char *const COMMAND_STRINGS[] = {FOREACH_COMMAND(GENERATE_STRING)};
+    const char *const PARAMETER_STRINGS[] = {FOREACH_PARAMETER(GENERATE_STRING)};
+
     bool TouchDisplay::shouldWaitForCommand = false;
     bool TouchDisplay::simulatedAutoLevelSwitchOn = true;
     CommandType TouchDisplay::activeCommand = Unknown;
@@ -46,13 +49,13 @@ namespace Geeetech
     void TouchDisplay::startup()
     {
         // use pin PD12 (60) as output and pull it up to supply 5V power
-        SET_OUTPUT(60);
-        WRITE(60, 1);
+        SET_OUTPUT(GEEETECH_A30T_TFT_POWER_PIN);
+        WRITE(GEEETECH_A30T_TFT_POWER_PIN, 1);
 
         // setup the communication with the display
         LCD_SERIAL.setRx(LCD_UART_RX); // use PD9 for RX
         LCD_SERIAL.setTx(LCD_UART_TX); // use PD8 for TX
-        LCD_SERIAL.begin(115200);      // Geeetech uses 115200 speed(
+        LCD_SERIAL.begin(GEEETECH_A30T_TFT_BAUDRATE);
 
 #ifdef GEEETECH_DISPLAY_DEBUG
         SERIAL_ECHOLNPGM("Geeetech A30T TFT initialized");
@@ -64,36 +67,39 @@ namespace Geeetech
     void TouchDisplay::process()
     {
         const millis_t currentTimeMs = millis();
-        if (LCD_SERIAL.available() && !shouldWaitForCommand)
+        if (!shouldWaitForCommand)
         {
-            UiCommand command = receiveCommand();
-
-            // ignore unkown command types for keeping command group active
-            if (Unknown != command.type)
+            UiCommand command = {};
+            if (receiveCommand(command))
             {
-                // current command group is not active anymore, so enable updates again
-                if (disableAxisStatusSend && activeCommand != command.type)
-                    disableAxisStatusSend = false;
-                activeCommand = command.type;
-            }
+
+                // Ignore unknown command types for keeping command group active.
+                if (Unknown != command.type)
+                {
+                    // A new command group re-enables axis status updates.
+                    if (disableAxisStatusSend && activeCommand != command.type)
+                        disableAxisStatusSend = false;
+                    activeCommand = command.type;
+                }
 
 #ifdef GEEETECH_DISPLAY_DEBUG
-            SERIAL_ECHOLNPGM("CommandType: ", COMMAND_STRINGS[command.type]);
-            SERIAL_ECHOLNPGM("String: ", command.command.c_str());
-            for (uint8_t j = 0; j < PARAMETERS_COUNT; j++)
-                SERIAL_ECHOLNPGM(PARAMETER_STRINGS[j], command.parameters[j].c_str());
+                SERIAL_ECHOLNPGM("CommandType: ", COMMAND_STRINGS[command.type]);
+                SERIAL_ECHOLNPGM("String: ", command.command.c_str());
+                for (uint8_t j = 0; j < PARAMETERS_COUNT; j++)
+                    SERIAL_ECHOLNPGM(PARAMETER_STRINGS[j], command.parameters[j].c_str());
 #endif
 
-            if (GCode == command.type)
-                handleGcode(command.command);
-            else if (Unknown == command.type)
-                handleUnkownCommand(command);
-            else
-                handleProprietaryCommand(command);
+                if (GCode == command.type)
+                    handleGcode(command.command);
+                else if (Unknown == command.type)
+                    handleUnkownCommand(command);
+                else
+                    handleProprietaryCommand(command);
 
-            // schedule an immediate answer, if needed
-            if (false FOREACH_ANSWER(command.type, GENERATE_BOOL_COMPARE))
-                setNextSendMs(currentTimeMs);
+                // Schedule an immediate answer, if needed.
+                if (false FOREACH_ANSWER(command.type, GENERATE_BOOL_COMPARE))
+                    setNextSendMs(currentTimeMs);
+            }
         }
 
         extrudeIfNeeded(currentTimeMs);
@@ -106,6 +112,10 @@ namespace Geeetech
 
     void TouchDisplay::showUserMessage(const UserMessageCode &code) {
         send_L18_UserMessage(code);
+    }
+
+    void TouchDisplay::requestStatusUpdate() {
+        setNextSendMs(millis());
     }
 
 } // namespace Geeetech

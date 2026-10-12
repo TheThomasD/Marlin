@@ -46,7 +46,7 @@ namespace Geeetech
 #ifdef GEEETECH_DISPLAY_DEBUG
         SERIAL_ECHOLNPGM("Queueing command: ", gcode.c_str());
 #endif
-        queue.enqueue_now_P(PSTR(gcode.c_str()));
+        queue.enqueue_one_now(gcode.c_str());
     }
 
     void TouchDisplay::handleUnkownCommand(const UiCommand &command)
