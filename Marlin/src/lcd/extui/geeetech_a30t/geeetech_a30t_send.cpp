@@ -142,7 +142,7 @@ namespace Geeetech
 
     void TouchDisplay::send_L9_FirmwareInfo()
     {
-        snprintf(output, sizeof(output), "L9 DN:Geeetech;DM:A30T;SN:TheThomasD;FV:%s;PV:320.00 x 320.00 x 420.00;HV:GTM32_103_V1;", getFirmwareName_str());
+        snprintf(output, sizeof(output), "L9 DN:Geeetech;DM:A30T;SN:TheThomasD;FV:Marlin " SHORT_BUILD_VERSION ";PV:320.00 x 320.00 x 420.00;HV:GTM32_103_V1;");
 
         sendToDisplay(output);
     }
