@@ -51,6 +51,10 @@ namespace Geeetech
     bool TouchDisplay::probeOffsetCalibrationActive = false;
     float_t TouchDisplay::probeOffsetCalibrationValue = 0;
     bool TouchDisplay::settingsStatusPending = true;
+    float TouchDisplay::displayBedTarget = 0;
+    float TouchDisplay::displayHotendTarget = 0;
+    bool TouchDisplay::displayTempTargetsValid = false;
+    millis_t TouchDisplay::nextDisplayTempTargetSync = 0;
 
     void TouchDisplay::startup()
     {

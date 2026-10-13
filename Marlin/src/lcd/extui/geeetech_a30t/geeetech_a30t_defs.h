@@ -49,10 +49,12 @@
     COMMAND(M2011)               \
     COMMAND(M2105)               \
     COMMAND(M2106)               \
+    COMMAND(M2103)               \
     COMMAND(M2107)               \
     COMMAND(M2120)               \
     COMMAND(M2134)               \
     COMMAND(M2135)               \
+    COMMAND(M2137)               \
     COMMAND(M2138)               \
     COMMAND(M2140)
 
@@ -80,6 +82,7 @@
     COMMAND(PARAMETER, M290)               \
     COMMAND(PARAMETER, M2011)              \
     COMMAND(PARAMETER, M2120)              \
+    COMMAND(PARAMETER, M2137)               \
     COMMAND(PARAMETER, M2138)               \
     COMMAND(PARAMETER, M2135)               \
     COMMAND(PARAMETER, M2140)
@@ -114,14 +117,9 @@
 #define FEEDRATE (uint8_t) round(ExtUI::getFeedrate_mm_s())
 #define BED_ACTIVE thermalManager.temp_bed.target > 0
 #define E0_ACTIVE thermalManager.temp_hotend[0].target > 0
-#define SD_ACTIVE isMediaInserted()
+#define SD_STATUS (isMediaInserted() ? 0 : 1)
 #define F0_SPEED (uint8_t) round(getActualFan_percent(FAN0))
 #define PRINT_SPEED (uint8_t) round(getFeedrate_percent())
-#define FILAMENT_SENSOR_STATUS getFilamentRunoutEnabled()        \
-                                   ? (getFilamentRunoutState()   \
-                                          ? FILAMENT_SENSOR_IN   \
-                                          : FILAMENT_SENSOR_OUT) \
-                                   : FILAMENT_SENSOR_DISABLED
 #define CURRENT_FILENAME card.filename
 #define MOTOR_TENSION_STATUS stepper.axis_is_enabled(X_AXIS) ||     \
                                  stepper.axis_is_enabled(Y_AXIS) || \

@@ -83,6 +83,22 @@ namespace Geeetech
         return PRINT_STATUS_IDLE;
     }
 
+    uint8_t TouchDisplay::getFilamentSensorStatus()
+    {
+        #if HAS_FILAMENT_SENSOR
+        if (!getFilamentRunoutEnabled())
+          return FILAMENT_SENSOR_DISABLED;
+
+        const bool runout =
+          READ(FIL_RUNOUT1_PIN) == FIL_RUNOUT1_STATE
+          || READ(FIL_RUNOUT2_PIN) == FIL_RUNOUT2_STATE
+          || READ(FIL_RUNOUT3_PIN) == FIL_RUNOUT3_STATE;
+        return runout ? FILAMENT_SENSOR_OUT : FILAMENT_SENSOR_IN;
+        #else
+        return FILAMENT_SENSOR_DISABLED;
+        #endif
+    }
+
 } // namespace Geeetech
 
 #endif // GEEETECH_A30T_TFT

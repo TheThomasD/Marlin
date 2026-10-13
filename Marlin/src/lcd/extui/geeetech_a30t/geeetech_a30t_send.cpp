@@ -106,17 +106,18 @@ namespace Geeetech
         static bool messageSent = false;
         char bedCurrentTemp[6], bedTargetTemp[6], e0CurrentTemp[6], e0TargetTemp[6];
 
+        syncDisplayTempTargets();
         dtostrf(getActualTemp_celsius(BED), 0, 1, bedCurrentTemp);
-        dtostrf(getTargetTemp_celsius(BED), 0, 1, bedTargetTemp);
+        dtostrf(displayBedTarget, 0, 1, bedTargetTemp);
         dtostrf(getActualTemp_celsius(E0), 0, 1, e0CurrentTemp);
-        dtostrf(getTargetTemp_celsius(E0), 0, 1, e0TargetTemp);
+        dtostrf(displayHotendTarget, 0, 1, e0TargetTemp);
 
         snprintf(output, sizeof(output), "L2 B:%s /%s /%d T0:%s /%s /%d T1:%s /%s /%d T2:%s /%s /%d SD:%d F0:%d F2:50 R:%d FR:%d",
-                 bedCurrentTemp /*5*/, bedTargetTemp /*5*/, BED_ACTIVE /*1*/,
-                 e0CurrentTemp /*5*/, e0TargetTemp /*5*/, E0_ACTIVE /*1*/,
-                 e0CurrentTemp /*5*/, e0TargetTemp /*5*/, E0_ACTIVE /*1*/,
-                 e0CurrentTemp /*5*/, e0TargetTemp /*5*/, E0_ACTIVE /*1*/,
-                 SD_ACTIVE /*1*/, F0_SPEED /*3*/, PRINT_SPEED /*3*/, FEEDRATE /*3*/);
+                 bedCurrentTemp /*5*/, bedTargetTemp /*5*/, displayBedTarget > 0 /*1*/,
+                 e0CurrentTemp /*5*/, e0TargetTemp /*5*/, displayHotendTarget > 0 /*1*/,
+                 e0CurrentTemp /*5*/, e0TargetTemp /*5*/, displayHotendTarget > 0 /*1*/,
+                 e0CurrentTemp /*5*/, e0TargetTemp /*5*/, displayHotendTarget > 0 /*1*/,
+                 SD_STATUS /*1*/, F0_SPEED /*3*/, PRINT_SPEED /*3*/, FEEDRATE /*3*/);
 
         if (!messageSent || strcmp(output, lastMessage)) {
             sendToDisplay(output);
@@ -130,7 +131,7 @@ namespace Geeetech
         static char lastMessage[sizeof(output)];
         static bool messageSent = false;
         snprintf(output, sizeof(output), "L3 PS:%d VL:0 MT:%d FT:%d AL:%d ST:1 WF:0 MR:%lu FN:%.64s PG:%d TM:%lu LA:0 LC:0",
-                 getPrintStatus() /*1*/, MOTOR_TENSION_STATUS /*1*/, FILAMENT_SENSOR_STATUS /*3*/,
+                 getPrintStatus() /*1*/, MOTOR_TENSION_STATUS /*1*/, getFilamentSensorStatus() /*3*/,
                  autoLevelingEnabled /*1*/, (unsigned long)getMixerRatio() /*7*/, CURRENT_FILENAME /*12*/,
                  getProgress_percent() /*3*/, (unsigned long)getProgress_seconds_elapsed() /*6*/);
 
@@ -141,11 +142,52 @@ namespace Geeetech
         }
     }
 
+    void TouchDisplay::send_L7_FileList()
+    {
+        sendToDisplay("L7 begin file list:0");
+
+        #if ENABLED(SDSUPPORT)
+          if (isMediaInserted()) {
+              FileList files;
+              const uint16_t count = files.count();
+              for (uint16_t i = 0; i < count; ++i) {
+                  if (!files.seek(i)) {
+                      #ifdef GEEETECH_DISPLAY_DEBUG
+                        SERIAL_ECHOLNPGM("Could not read SD file list entry ", i);
+                      #endif
+                      break;
+                  }
+                  snprintf(output, sizeof(output), "L7 P%u %.64s", i, files.filename());
+                  sendToDisplay(output);
+              }
+          }
+        #endif
+
+        sendToDisplay("L7 end file list:0");
+    }
+
     void TouchDisplay::send_L22_MixingStatus()
     {
-        snprintf(output, sizeof(output), "L22 MS:%u MR:%lu SP:100 EP:100 SH:0.00 EH:0.00",
-                 mixingMode, (unsigned long)getMixerRatio());
+        #if ENABLED(GRADIENT_MIX)
+          snprintf(output, sizeof(output), "L22 MS:%u MR:%lu SP:100 EP:100 SH:%.2f EH:%.2f",
+                   mixingMode, (unsigned long)getMixerRatio(),
+                   mixer.gradient.start_z, mixer.gradient.end_z);
+        #else
+          snprintf(output, sizeof(output), "L22 MS:%u MR:%lu SP:100 EP:100 SH:0.00 EH:0.00",
+                   mixingMode, (unsigned long)getMixerRatio());
+        #endif
         sendToDisplay(output);
+    }
+
+    void TouchDisplay::syncDisplayTempTargets()
+    {
+        const millis_t now = millis();
+        if (!displayTempTargetsValid || ELAPSED(now, nextDisplayTempTargetSync)) {
+            displayBedTarget = getTargetTemp_celsius(BED);
+            displayHotendTarget = getTargetTemp_celsius(E0);
+            displayTempTargetsValid = true;
+            nextDisplayTempTargetSync = now + 5000;
+        }
     }
 
     void TouchDisplay::send_L9_FirmwareInfo()

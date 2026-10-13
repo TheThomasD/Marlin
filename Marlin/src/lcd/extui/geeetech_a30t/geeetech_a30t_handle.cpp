@@ -35,6 +35,8 @@
 #include "geeetech_a30t.h"
 #include "../ui_api.h"
 #include "../../marlinui.h"
+#include <stdlib.h>
+#include <math.h>
 
 using namespace ExtUI;
 
@@ -55,11 +57,85 @@ namespace Geeetech
         return !separator || separator == ' ' || separator == '\t' || separator == ';';
     }
 
+    static bool getGCodeParameter(const String &command, const char parameter, float &value)
+    {
+        const char *text = command.c_str();
+        while (*text && *text != ' ' && *text != '\t')
+            ++text;
+
+        while (*text) {
+            while (*text == ' ' || *text == '\t')
+                ++text;
+            if (!*text || *text == ';')
+                break;
+
+            const char *token = text;
+            if (*token++ == parameter) {
+                char *end;
+                const float parsed = strtof(token, &end);
+                if (end != token && isfinite(parsed)) {
+                    value = parsed;
+                    return true;
+                }
+            }
+
+            while (*text && *text != ' ' && *text != '\t' && *text != ';')
+                ++text;
+        }
+        return false;
+    }
+
     void TouchDisplay::handleGcode(const String &gcode)
     {
 #ifdef GEEETECH_DISPLAY_DEBUG
         SERIAL_ECHOLNPGM("Queueing command: ", gcode.c_str());
 #endif
+        if (isGCodeCommand(gcode, "M104") || isGCodeCommand(gcode, "M109")) {
+            float target;
+            if (getGCodeParameter(gcode, 'S', target)) {
+                syncDisplayTempTargets();
+                displayHotendTarget = target;
+                nextDisplayTempTargetSync = millis() + 5000;
+            }
+        }
+        else if (isGCodeCommand(gcode, "M140") || isGCodeCommand(gcode, "M190")) {
+            float target;
+            if (getGCodeParameter(gcode, 'S', target)) {
+                syncDisplayTempTargets();
+                displayBedTarget = target;
+                nextDisplayTempTargetSync = millis() + 5000;
+            }
+        }
+
+        if (isGCodeCommand(gcode, "M27"))
+        {
+            send_L3_PrintInfo(true);
+            return;
+        }
+
+        if (isGCodeCommand(gcode, "M20 LCD")) {
+            send_L7_FileList();
+            return;
+        }
+
+        if (isGCodeCommand(gcode, "M23")) {
+            String requestedFilename = gcode.substring(3);
+            requestedFilename.trim();
+
+            FileList files;
+            for (uint16_t i = 0; i < files.count(); ++i) {
+                if (files.seek(i) && !files.isDir()
+                    && requestedFilename.equalsIgnoreCase(files.filename())) {
+                    char shortFilename[FILENAME_LENGTH];
+                    snprintf(shortFilename, sizeof(shortFilename), "%s", files.shortFilename());
+                    String shortNameCommand = "M23 ";
+                    shortNameCommand += shortFilename;
+                    queue.enqueue_one_now(shortNameCommand.c_str());
+                    return;
+                }
+            }
+        }
+
         if (isGCodeCommand(gcode, "M163") || isGCodeCommand(gcode, "M164")
             || isGCodeCommand(gcode, "M165") || isGCodeCommand(gcode, "M166"))
         {
@@ -99,6 +175,9 @@ namespace Geeetech
         case M2106:
             setFilamentRunoutEnabled('1' == command.parameters[S].charAt(0));
             break;
+        case M2103:
+            stopPrint();
+            break;
         case M2107:
             handle_M2107_ManualLeveling(command);
             break;
@@ -110,6 +189,9 @@ namespace Geeetech
             break;
         case M2135:
             handle_M2135_SetColorMix(command);
+            break;
+        case M2137:
+            handle_M2137_SetMixingTemplate(command);
             break;
         case M2138:
             handle_M2138_SetMixingMode(command);

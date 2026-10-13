@@ -42,12 +42,25 @@ namespace Geeetech
 {
     void TouchDisplay::handle_M2135_SetColorMix(const UiCommand &command)
     {
-        uintmax_t value = strtoumax(command.parameters[P].c_str(), NULL, 10);
+        const uint32_t value = strtoul(command.parameters[P].c_str(), NULL, 10);
+        const uint8_t mix[3] = { uint8_t(value), uint8_t(value >> 8), uint8_t(value >> 16) };
+        if (!(mix[0] || mix[1] || mix[2]) || mix[0] > 100 || mix[1] > 100 || mix[2] > 100) {
+            #ifdef GEEETECH_DISPLAY_DEBUG
+                SERIAL_ECHOLNPGM("Invalid M2135 mix ratio");
+            #endif
+            return;
+        }
 
-        mixer.collector[0] = ((uint8_t)value) & COLOR_MASK;
-        mixer.collector[1] = ((uint8_t)(value >> 8)) & COLOR_MASK;
-        mixer.collector[2] = (uint8_t)(value >> 16);
+        mixer.collector[0] = mix[0];
+        mixer.collector[1] = mix[1];
+        mixer.collector[2] = mix[2];
         mixer.normalize();
+        #if ENABLED(GRADIENT_MIX)
+          if (mixingMode == (uint16_t(3) << 8))
+            mixer.refresh_gradient();
+          else
+            mixer.gradient.enabled = false;
+        #endif
         mixerStatusPending = true;
     }
 } // namespace Geeetech

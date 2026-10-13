@@ -134,12 +134,17 @@ namespace Geeetech
         static bool settingsStatusPending;
         static bool probeOffsetStatusPending;
         static char output[200]; // should be enough for all message
+        static float displayBedTarget;
+        static float displayHotendTarget;
+        static bool displayTempTargetsValid;
+        static millis_t nextDisplayTempTargetSync;
         // send methods
         static void setNextSendMs(const millis_t &currentTimeMs);
         static void sendStatusIfNeeded(const millis_t &currentTimeMs);
         static void send_L1_AxisInfo(const bool force = false, const bool useProbeOffset = false);
         static void send_L2_TempInfo();
         static void send_L3_PrintInfo(const bool force = false);
+        static void send_L7_FileList();
         static void send_L22_MixingStatus();
         static void send_L9_FirmwareInfo();
         static void send_L10_ZOffset();
@@ -148,10 +153,12 @@ namespace Geeetech
         static void send_L18_UserMessage(const UserMessageCode &code);
         static void send_L24_SettingsStatus();
         static void sendToDisplay(const char *const message, const bool addChecksum = true);
+        static void syncDisplayTempTargets();
         static uint32_t getMixerRatio();
         static uint16_t mixingMode;
         static bool mixerStatusPending;
         static uint8_t getPrintStatus();
+        static uint8_t getFilamentSensorStatus();
 
         // receive methods
         static bool receiveCommand(UiCommand &command);
@@ -206,6 +213,7 @@ namespace Geeetech
 
         // M2135 set color mix
         static void handle_M2135_SetColorMix(const UiCommand &command);
+        static void handle_M2137_SetMixingTemplate(const UiCommand &command);
         static void handle_M2138_SetMixingMode(const UiCommand &command);
 
         // M2140 view/set motion parameters

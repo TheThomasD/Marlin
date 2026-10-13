@@ -31,6 +31,12 @@ namespace Geeetech {
 
     // The display protocol encodes its mode in the high byte of the L22 value.
     mixingMode = uint16_t(mode - '0') << 8;
+    #if ENABLED(GRADIENT_MIX)
+      if (mode == '3')
+        mixer.refresh_gradient();
+      else
+        mixer.gradient.enabled = false;
+    #endif
     mixerStatusPending = true;
   }
 
