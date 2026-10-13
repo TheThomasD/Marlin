@@ -261,7 +261,7 @@ bool unified_bed_leveling::sanity_check() {
   void GcodeSuite::M1004() {
 
     #define ALIGN_GCODE TERN(Z_STEPPER_AUTO_ALIGN, "G34", "")
-    #define PROBE_GCODE TERN(HAS_BED_PROBE, "G29P1\nG29P3", "G29P4R")
+    #define PROBE_GCODE TERN(HAS_BED_PROBE, "G29P1V4\nG29P3", "G29P4R")
 
     #if HAS_HOTEND
       if (parser.seenval('H')) {                          // Handle H# parameter to set Hotend temp
