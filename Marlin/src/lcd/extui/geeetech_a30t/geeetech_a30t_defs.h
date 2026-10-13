@@ -25,6 +25,8 @@
  * lcd/extui/geeetech_a30t/geeetech_a30t_defs.h
  */
 
+#define GEEETECH_DISPLAY_DEBUG
+
 // settings
 #define SEND_CYCLE_IN_MS 1000
 #define EXTRUDE_CYCLE_IN_MS 1000

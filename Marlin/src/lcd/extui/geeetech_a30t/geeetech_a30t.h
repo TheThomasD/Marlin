@@ -119,26 +119,31 @@ namespace Geeetech
         static void showStatus(const char *const message);
         static void showUserMessage(const UserMessageCode &code);
         static void requestStatusUpdate(const bool settingsChanged = false);
+        static void requestProbeOffsetUpdate();
 
     private:
         static bool shouldWaitForCommand;
         static CommandType activeCommand;
+        static bool probeOffsetDisplayActive;
+        static bool probeOffsetCalibrationActive;
+        static float_t probeOffsetCalibrationValue;
 
         // send variables
         static millis_t nextStatusSend;
         static bool disableAxisStatusSend;
         static bool settingsStatusPending;
+        static bool probeOffsetStatusPending;
         static char output[200]; // should be enough for all message
         // send methods
         static void setNextSendMs(const millis_t &currentTimeMs);
         static void sendStatusIfNeeded(const millis_t &currentTimeMs);
-        static void send_L1_AxisInfo();
+        static void send_L1_AxisInfo(const bool force = false, const bool useProbeOffset = false);
         static void send_L2_TempInfo();
-        static void send_L3_PrintInfo();
+        static void send_L3_PrintInfo(const bool force = false);
         static void send_L22_MixingStatus();
         static void send_L9_FirmwareInfo();
         static void send_L10_ZOffset();
-        static void send_L11_ProbeZOffset_andFakeL1();
+        static void send_L11_ProbeZOffset();
         static void send_L14_MessageToDisplay(const String &message);
         static void send_L18_UserMessage(const UserMessageCode &code);
         static void send_L24_SettingsStatus();
@@ -185,7 +190,8 @@ namespace Geeetech
         static void moveUpDownSmallBigStep(const bool &up, const bool &bigStep);
 
         // M2120 automatic leveling
-        static bool simulatedAutoLevelSwitchOn;
+        // Keep display sensor-use state separate from temporary mesh leveling.
+        static bool autoLevelingEnabled;
         static void handle_M2120_AutoLeveling(const UiCommand &command);
         static void handle_M2120_P1_ProbeControl(const char &sParameter);
         static void handle_M2120_P2_StoreZOffset(const String &sParameter);

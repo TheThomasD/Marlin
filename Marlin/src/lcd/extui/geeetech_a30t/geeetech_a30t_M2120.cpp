@@ -42,34 +42,54 @@ namespace Geeetech
 {
     void TouchDisplay::handle_M2120_AutoLeveling(const UiCommand &command)
     {
+        bool sendProbeOffset = false;
+        bool sendPosition = false;
+        bool sendLevelingStatus = false;
+
         switch (command.parameters[P].charAt(0))
         {
         case '0': // auto leveling on/off
-            setLevelingActive('1' == command.parameters[S].charAt(0));
-            simulatedAutoLevelSwitchOn = getLevelingActive();
-            if ('1' == command.parameters[S].charAt(0) && !simulatedAutoLevelSwitchOn)
+            autoLevelingEnabled = '1' == command.parameters[S].charAt(0);
+            setLevelingActive(autoLevelingEnabled);
+            if ('1' == command.parameters[S].charAt(0) && !getLevelingActive())
                 SERIAL_ERROR_MSG("Bed leveling could not be enabled: invalid mesh.");
+            sendProbeOffset = true;
+            sendPosition = true;
+            sendLevelingStatus = true;
             break;
         case '1': // control probe
             handle_M2120_P1_ProbeControl(command.parameters[S].charAt(0));
             break;
         case '2': // store Z offset value
             handle_M2120_P2_StoreZOffset(command.parameters[S]);
+            sendProbeOffset = true;
             break;
         case '3': // offset up
             handle_M2120_P3_MoveUp(command.parameters[S].charAt(0));
+            sendPosition = true;
             break;
         case '4': // offset down
             handle_M2120_P4_MoveDown(command.parameters[S].charAt(0));
+            sendPosition = true;
             break;
         case '5': // start and request Z offset value
             disableAxisStatusSend = true;
+            probeOffsetDisplayActive = true;
+            probeOffsetCalibrationActive = false;
+            sendProbeOffset = true;
+            sendPosition = true;
+            sendLevelingStatus = true;
             break;
         case '6': // move nozzle to center
             handle_M2120_P6_CenterNozzle();
+            sendPosition = true;
             break;
         case '7': // move probe to center and measure
+            disableAxisStatusSend = true;
+            probeOffsetDisplayActive = true;
             handle_M2120_P7_ProbeCenter();
+            sendPosition = true;
+            sendLevelingStatus = true;
             break;
         case '9': // select CAS/BLtouch
         default:
@@ -79,7 +99,12 @@ namespace Geeetech
             break;
         }
 
-        send_L11_ProbeZOffset_andFakeL1();
+        if (sendProbeOffset)
+            send_L11_ProbeZOffset();
+        if (sendPosition)
+            send_L1_AxisInfo(true, true);
+        if (sendLevelingStatus)
+            send_L3_PrintInfo(true);
     }
 
     void TouchDisplay::handle_M2120_P1_ProbeControl(const char &sParameter)
@@ -97,7 +122,6 @@ namespace Geeetech
             handleGcode("M280 P0 S160"); // control servo
             break;
         }
-        send_L11_ProbeZOffset_andFakeL1();
     }
 
     void TouchDisplay::handle_M2120_P2_StoreZOffset(const String &sParameter)
@@ -108,6 +132,7 @@ namespace Geeetech
             return;
         }
         setProbeOffset_mm(offset, ExtUI::Z);
+        probeOffsetCalibrationActive = false;
         settingsStatusPending = true;
         settings.save();
     }
@@ -115,12 +140,15 @@ namespace Geeetech
     void TouchDisplay::handle_M2120_P3_MoveUp(const char &sParameter)
     {
         const float_t height = mapSParameterToHeight(sParameter);
-        const float_t offset = getProbeOffset_mm(ExtUI::Z) + height;
+        const float_t offset = (probeOffsetCalibrationActive ? probeOffsetCalibrationValue : getProbeOffset_mm(ExtUI::Z)) + height;
         if (!WITHIN(offset, Z_PROBE_OFFSET_RANGE_MIN, Z_PROBE_OFFSET_RANGE_MAX)) {
             SERIAL_ERROR_MSG("Z probe offset out of range (", Z_PROBE_OFFSET_RANGE_MIN, " to ", Z_PROBE_OFFSET_RANGE_MAX, ").");
             return;
         }
-        setProbeOffset_mm(offset, ExtUI::Z);
+        if (probeOffsetCalibrationActive)
+            probeOffsetCalibrationValue = offset;
+        else
+            setProbeOffset_mm(offset, ExtUI::Z);
         do_blocking_move_to_z(current_position.z + height);
         settingsStatusPending = true;
     }
@@ -128,12 +156,15 @@ namespace Geeetech
     void TouchDisplay::handle_M2120_P4_MoveDown(const char &sParameter)
     {
         const float_t height = mapSParameterToHeight(sParameter);
-        const float_t offset = getProbeOffset_mm(ExtUI::Z) - height;
+        const float_t offset = (probeOffsetCalibrationActive ? probeOffsetCalibrationValue : getProbeOffset_mm(ExtUI::Z)) - height;
         if (!WITHIN(offset, Z_PROBE_OFFSET_RANGE_MIN, Z_PROBE_OFFSET_RANGE_MAX)) {
             SERIAL_ERROR_MSG("Z probe offset out of range (", Z_PROBE_OFFSET_RANGE_MIN, " to ", Z_PROBE_OFFSET_RANGE_MAX, ").");
             return;
         }
-        setProbeOffset_mm(offset, ExtUI::Z);
+        if (probeOffsetCalibrationActive)
+            probeOffsetCalibrationValue = offset;
+        else
+            setProbeOffset_mm(offset, ExtUI::Z);
         do_blocking_move_to_z(current_position.z - height);
         settingsStatusPending = true;
     }
@@ -146,18 +177,29 @@ namespace Geeetech
     void TouchDisplay::handle_M2120_P7_ProbeCenter()
     {
         setLevelingActive(false);
-        simulatedAutoLevelSwitchOn = getLevelingActive();
+        gcode.home_all_axes(false);
+        setLevelingActive(false);
+        probeOffsetCalibrationActive = false;
+        const float_t originalProbeOffset = getProbeOffset_mm(ExtUI::Z);
         setProbeOffset_mm(0, ExtUI::Z);
         settingsStatusPending = true;
-        gcode.home_all_axes(false);
-        do_blocking_move_to_z(5);
         const float_t measuredZ = probe.probe_at_point(X_CENTER, Y_CENTER, PROBE_PT_STOW);
+        setProbeOffset_mm(originalProbeOffset, ExtUI::Z);
         if (isnan(measuredZ)) {
             SERIAL_ERROR_MSG("Probe measurement failed.");
+            do_blocking_move_to_z(5);
+            do_blocking_move_to_xy(X_CENTER, Y_CENTER);
             return;
         }
-        do_blocking_move_to_z(5);
-        do_blocking_move_to_xy(X_CENTER, Y_CENTER);
+
+        probeOffsetCalibrationActive = true;
+        probeOffsetCalibrationValue = 0;
+        // probe_at_point targets the bed with the probe, leaving the nozzle
+        // offset from that point. Move the nozzle over the probed point before
+        // starting the display's manual Z adjustment.
+        current_position += probe.offset_xy;
+        do_blocking_move_to_xy(current_position);
+        do_blocking_move_to_z(measuredZ);
     }
 
     float_t TouchDisplay::mapSParameterToHeight(const char &sParameter)
@@ -165,7 +207,7 @@ namespace Geeetech
         switch (sParameter)
         {
         case '0':
-            return 1.0; // The display labels this step 10mm, but sends a 1mm adjustment.
+            return 0.01; // The display's 10mm selection is used for fine Z adjustment.
         case '1':
             return 1;
         case '2':

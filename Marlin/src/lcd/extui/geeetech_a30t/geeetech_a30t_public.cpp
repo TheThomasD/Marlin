@@ -45,8 +45,11 @@ namespace Geeetech
     uint16_t TouchDisplay::mixingMode = 0;
     bool TouchDisplay::mixerStatusPending = true;
     bool TouchDisplay::shouldWaitForCommand = false;
-    bool TouchDisplay::simulatedAutoLevelSwitchOn = true;
+    bool TouchDisplay::autoLevelingEnabled = true;
     CommandType TouchDisplay::activeCommand = Unknown;
+    bool TouchDisplay::probeOffsetDisplayActive = false;
+    bool TouchDisplay::probeOffsetCalibrationActive = false;
+    float_t TouchDisplay::probeOffsetCalibrationValue = 0;
     bool TouchDisplay::settingsStatusPending = true;
 
     void TouchDisplay::startup()
@@ -80,8 +83,10 @@ namespace Geeetech
                 if (Unknown != command.type)
                 {
                     // A new command group re-enables axis status updates.
-                    if (disableAxisStatusSend && activeCommand != command.type)
+                    if (activeCommand != command.type) {
                         disableAxisStatusSend = false;
+                        probeOffsetDisplayActive = false;
+                    }
                     activeCommand = command.type;
                 }
 
@@ -120,6 +125,11 @@ namespace Geeetech
     void TouchDisplay::requestStatusUpdate(const bool settingsChanged) {
         if (settingsChanged)
             settingsStatusPending = true;
+        setNextSendMs(millis());
+    }
+
+    void TouchDisplay::requestProbeOffsetUpdate() {
+        probeOffsetStatusPending = true;
         setNextSendMs(millis());
     }
 

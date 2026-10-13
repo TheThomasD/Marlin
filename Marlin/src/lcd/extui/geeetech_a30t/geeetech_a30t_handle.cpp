@@ -60,12 +60,6 @@ namespace Geeetech
 #ifdef GEEETECH_DISPLAY_DEBUG
         SERIAL_ECHOLNPGM("Queueing command: ", gcode.c_str());
 #endif
-#ifdef GEEETECH_A30T_TFT_G29_REPLACEMENT
-        if (isGCodeCommand(gcode, "G29")) {
-            queue.enqueue_now(F(GEEETECH_A30T_TFT_G29_REPLACEMENT));
-            return;
-        }
-#endif
         if (isGCodeCommand(gcode, "M163") || isGCodeCommand(gcode, "M164")
             || isGCodeCommand(gcode, "M165") || isGCodeCommand(gcode, "M166"))
         {
@@ -91,7 +85,6 @@ namespace Geeetech
         switch (command.type)
         {
         case L101: // return from M2107 manual leveling
-            simulatedAutoLevelSwitchOn = true;
             disableAxisStatusSend = false;
             break;
         case M290:

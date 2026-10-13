@@ -73,7 +73,10 @@ namespace ExtUI
   void onStoreSettings(char *) {}
   void onSettingsStored(bool) { Display.requestStatusUpdate(true); }
   void onLoadSettings(const char *) {}
-  void onSettingsLoaded(bool) { Display.requestStatusUpdate(true); }
+  void onSettingsLoaded(bool) {
+    Display.requestStatusUpdate(true);
+    Display.requestProbeOffsetUpdate();
+  }
   void onPostprocessSettings() {}
   void onConfigurationStoreWritten(bool) {}
   void onConfigurationStoreRead(bool) {}

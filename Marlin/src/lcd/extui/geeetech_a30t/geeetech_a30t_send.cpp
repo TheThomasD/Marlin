@@ -46,6 +46,7 @@ namespace Geeetech
 {
     millis_t TouchDisplay::nextStatusSend = 0;
     bool TouchDisplay::disableAxisStatusSend = false;
+    bool TouchDisplay::probeOffsetStatusPending = false;
     char TouchDisplay::output[] = {};
 
     void TouchDisplay::setNextSendMs(const millis_t &currentTimeMs) { nextStatusSend = currentTimeMs; }
@@ -54,9 +55,13 @@ namespace Geeetech
     {
         if (ELAPSED(currentTimeMs, nextStatusSend))
         {
-            if (!disableAxisStatusSend)
-            {
-                send_L1_AxisInfo();
+            if (probeOffsetStatusPending) {
+                send_L11_ProbeZOffset();
+                probeOffsetStatusPending = false;
+            }
+            if (!disableAxisStatusSend || probeOffsetDisplayActive)
+                send_L1_AxisInfo(false, probeOffsetDisplayActive);
+            if (!disableAxisStatusSend) {
                 if (settingsStatusPending) {
                     send_L24_SettingsStatus();
                     settingsStatusPending = false;
@@ -72,20 +77,23 @@ namespace Geeetech
         }
     }
 
-    void TouchDisplay::send_L1_AxisInfo()
+    void TouchDisplay::send_L1_AxisInfo(const bool force, const bool useProbeOffset)
     {
         static char lastMessage[sizeof(output)];
         static bool messageSent = false;
-        char x[8], y[8], z[8]; // 6 digits + dot + \0
+        char x[16], y[16], z[16];
 
         xyze_pos_t currentLogicalPos = current_position.asLogical();
         dtostrf(currentLogicalPos.x, 0, 3, x);
         dtostrf(currentLogicalPos.y, 0, 3, y);
-        dtostrf(currentLogicalPos.z, 0, 3, z);
+        const float_t displayedProbeOffset = probeOffsetCalibrationActive
+            ? probeOffsetCalibrationValue
+            : getProbeOffset_mm(ExtUI::Z);
+        dtostrf(useProbeOffset ? displayedProbeOffset : currentLogicalPos.z, 0, 3, z);
 
         snprintf(output, sizeof(output), "L1 X%s Y%s Z%s F%d",
                  x /*7*/, y /*7*/, z /*7*/, FEEDRATE /*3*/);
-        if (!messageSent || strcmp(output, lastMessage)) {
+        if (force || !messageSent || strcmp(output, lastMessage)) {
             sendToDisplay(output);
             strcpy(lastMessage, output);
             messageSent = true;
@@ -117,16 +125,16 @@ namespace Geeetech
         }
     }
 
-    void TouchDisplay::send_L3_PrintInfo()
+    void TouchDisplay::send_L3_PrintInfo(const bool force)
     {
         static char lastMessage[sizeof(output)];
         static bool messageSent = false;
         snprintf(output, sizeof(output), "L3 PS:%d VL:0 MT:%d FT:%d AL:%d ST:1 WF:0 MR:%lu FN:%.64s PG:%d TM:%lu LA:0 LC:0",
                  getPrintStatus() /*1*/, MOTOR_TENSION_STATUS /*1*/, FILAMENT_SENSOR_STATUS /*3*/,
-                 simulatedAutoLevelSwitchOn /*1*/, (unsigned long)getMixerRatio() /*7*/, CURRENT_FILENAME /*12*/,
+                 autoLevelingEnabled /*1*/, (unsigned long)getMixerRatio() /*7*/, CURRENT_FILENAME /*12*/,
                  getProgress_percent() /*3*/, (unsigned long)getProgress_seconds_elapsed() /*6*/);
 
-        if (!messageSent || strcmp(output, lastMessage)) {
+        if (force || !messageSent || strcmp(output, lastMessage)) {
             sendToDisplay(output);
             strcpy(lastMessage, output);
             messageSent = true;
@@ -155,13 +163,10 @@ namespace Geeetech
         sendToDisplay(output);
     }
 
-    void TouchDisplay::send_L11_ProbeZOffset_andFakeL1()
+    void TouchDisplay::send_L11_ProbeZOffset()
     {
-        // send L11 and fake L1 as it is required as well :(
         char probeZOffset[7];
         dtostrf(getProbeOffset_mm(ExtUI::Z), 0, 2, probeZOffset);
-        snprintf(output, sizeof(output), "L1 Z%s", probeZOffset);
-        sendToDisplay(output);
         snprintf(output, sizeof(output), "L11 P0 S%s", probeZOffset);
         sendToDisplay(output);
     }
@@ -235,25 +240,23 @@ namespace Geeetech
 
     void TouchDisplay::sendToDisplay(const char *const message, const bool addChecksum)
     {
+        char line[sizeof(output) + 16];
         if (addChecksum)
         {
-            LCD_SERIAL.write("N-0 ");
-
             uint8_t checksum = 115; // checksum of line sent above
-            for (const char *p = message; *p; ++p) {
+            for (const char *p = message; *p; ++p)
                 checksum ^= *p;
-                LCD_SERIAL.write(*p);
-            }
-            char number[5];
-            sprintf(number, "*%d", checksum);
-            LCD_SERIAL.write(number);
+            snprintf(line, sizeof(line), "N-0 %s*%u", message, checksum);
         }
         else
-        {
-            LCD_SERIAL.write(message);
-        }
+            snprintf(line, sizeof(line), "%s", message);
 
+        LCD_SERIAL.write(line);
         LCD_SERIAL.write("\r\n");
+#ifdef GEEETECH_DISPLAY_DEBUG
+        SERIAL_ECHOPGM("A30T LCD TX: ");
+        SERIAL_ECHOLN(line);
+#endif
         delay(20);
     }
 
