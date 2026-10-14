@@ -40,6 +40,8 @@ using namespace ExtUI;
 
 namespace Geeetech
 {
+    float_t TouchDisplay::manualLevelingOffset = 0.0f;
+
     void TouchDisplay::handle_M2107_ManualLeveling(const UiCommand &command)
     {
         if (command.parameters[S].equals("10")) // move Z down 0.05mm
@@ -71,8 +73,8 @@ namespace Geeetech
             case '7': // move Z down 0.5mm
                 moveUpDownSmallBigStep(MANUAL_LEVELING_MOVE_DIRECTION_DOWN, MANUAL_LEVELING_MOVE_BIG_STEP);
                 break;
-            case '8': // OK / save
-                handle_M2107_S8_OkSave();
+            case '8': // OK / keep offset in RAM
+                handle_M2107_S8_Ok();
                 break;
             case '9': // move Z down 0.05mm
                 moveUpDownSmallBigStep(MANUAL_LEVELING_MOVE_DIRECTION_DOWN, MANUAL_LEVELING_MOVE_SMALL_STEP);
@@ -86,12 +88,11 @@ namespace Geeetech
         disableAxisStatusSend = true;
         send_L10_ZOffset();
         home_if_needed(false);
-        do_blocking_move_to_z(0.0 - home_offset.z, 200.0F);
+        do_blocking_move_to_z(0.0f - manualLevelingOffset, 200.0F);
     };
 
-    void TouchDisplay::handle_M2107_S8_OkSave()
+    void TouchDisplay::handle_M2107_S8_Ok()
     {
-        settings.save();
         sendToDisplay("M2107 save success");
     };
 
@@ -99,21 +100,18 @@ namespace Geeetech
     {
         do_blocking_move_to_z(MANUAL_LEVELING_MOVE_Z_HOP, 800);
         do_blocking_move_to_xy(xPos, yPos);
-        do_blocking_move_to_z(0.0 - home_offset.z, 800);
+        do_blocking_move_to_z(0.0f - manualLevelingOffset, 800);
         sendToDisplay("M2107 ok");
     }
 
     void TouchDisplay::moveUpDownSmallBigStep(const bool &directionUpDown, const bool &bigSmallStep)
     {
-        float_t newOffset = home_offset[Z_AXIS];
-
         if (directionUpDown == MANUAL_LEVELING_MOVE_DIRECTION_UP)
-            newOffset -= bigSmallStep == MANUAL_LEVELING_MOVE_BIG_STEP ? 0.5 : 0.05;
+            manualLevelingOffset -= bigSmallStep == MANUAL_LEVELING_MOVE_BIG_STEP ? 0.5 : 0.05;
         else
-            newOffset += bigSmallStep == MANUAL_LEVELING_MOVE_BIG_STEP ? 0.5 : 0.05;
+            manualLevelingOffset += bigSmallStep == MANUAL_LEVELING_MOVE_BIG_STEP ? 0.5 : 0.05;
 
-        set_home_offset(Z_AXIS, newOffset);
-        do_blocking_move_to_z(0.0 - home_offset.z, 200.0);
+        do_blocking_move_to_z(0.0f - manualLevelingOffset, 200.0);
     }
 } // namespace Geeetech
 

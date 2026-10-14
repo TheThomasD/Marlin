@@ -200,7 +200,7 @@ namespace Geeetech
     void TouchDisplay::send_L10_ZOffset()
     {
         char zOffset[7];
-        dtostrf(-home_offset[Z_AXIS], 0, 2, zOffset);
+        dtostrf(-manualLevelingOffset, 0, 2, zOffset);
         snprintf(output, sizeof(output), "L10 S%s", zOffset);
         sendToDisplay(output);
     }

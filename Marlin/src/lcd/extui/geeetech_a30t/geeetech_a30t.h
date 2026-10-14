@@ -190,9 +190,10 @@ namespace Geeetech
         static void extrudeIfNeeded(const millis_t &currentTimeMs);
 
         // M2107 manual leveling
+        static float_t manualLevelingOffset;
         static void handle_M2107_ManualLeveling(const UiCommand &command);
         static void handle_M2107_S0_Start();
-        static void handle_M2107_S8_OkSave();
+        static void handle_M2107_S8_Ok();
         static void moveToXYWithZHop(const float_t &xPos, const float_t &yPos);
         static void moveUpDownSmallBigStep(const bool &up, const bool &bigStep);
 
