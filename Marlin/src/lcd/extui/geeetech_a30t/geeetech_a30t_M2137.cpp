@@ -23,7 +23,11 @@ namespace Geeetech {
   static bool parseMixRatio(const String &parameter, float (&mix)[MIXING_STEPPERS]) {
     if (!parameter.length()) return false;
 
-    const uint32_t packed = strtoul(parameter.c_str(), NULL, 10);
+    char *end;
+    const unsigned long parsed = strtoul(parameter.c_str(), &end, 10);
+    if (end == parameter.c_str() || *end || parsed > 0xFFFFFFUL) return false;
+
+    const uint32_t packed = uint32_t(parsed);
     uint32_t sum = 0;
     MIXER_STEPPER_LOOP(i) {
       const uint8_t value = uint8_t(packed >> (8 * i));
@@ -38,7 +42,17 @@ namespace Geeetech {
     if (!parameter.length()) return false;
     char *end;
     height = strtof(parameter.c_str(), &end);
-    return end != parameter.c_str() && isfinite(height) && WITHIN(height, 0, Z_MAX_POS);
+    return end != parameter.c_str() && !*end && isfinite(height) && WITHIN(height, Z_MIN_POS, Z_MAX_POS);
+  }
+
+  static void setTemplateMix(const float (&mix)[MIXING_STEPPERS], const uint8_t vtool) {
+    float savedCollector[MIXING_STEPPERS];
+    MIXER_STEPPER_LOOP(i) {
+      savedCollector[i] = mixer.collector[i];
+      mixer.set_collector(i, mix[i]);
+    }
+    mixer.normalize(vtool);
+    MIXER_STEPPER_LOOP(i) mixer.collector[i] = savedCollector[i];
   }
 
   void TouchDisplay::handle_M2137_SetMixingTemplate(const UiCommand &command) {
@@ -75,15 +89,13 @@ namespace Geeetech {
     }
 
     if (startRatio.length()) {
-      MIXER_STEPPER_LOOP(i) mixer.set_collector(i, startMix[i]);
-      mixer.normalize(0);
-      mixer.gradient.start_vtool = 0;
+      setTemplateMix(startMix, TEMPLATE_START_VTOOL);
+      mixer.gradient.start_vtool = TEMPLATE_START_VTOOL;
     }
 
     if (endRatio.length()) {
-      MIXER_STEPPER_LOOP(i) mixer.set_collector(i, endMix[i]);
-      mixer.normalize(1);
-      mixer.gradient.end_vtool = 1;
+      setTemplateMix(endMix, TEMPLATE_END_VTOOL);
+      mixer.gradient.end_vtool = TEMPLATE_END_VTOOL;
     }
 
     if (startHeight.length()) mixer.gradient.start_z = startZ;

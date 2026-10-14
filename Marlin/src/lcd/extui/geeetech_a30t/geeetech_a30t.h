@@ -85,6 +85,13 @@ namespace Geeetech
         FOREACH_E_MODE(GENERATE_ENUM)
     };
 
+    enum : uint8_t {
+        FIXED_MIX_VTOOL = 0,
+        TEMPLATE_START_VTOOL = MIXING_VIRTUAL_TOOLS - 2,
+        TEMPLATE_END_VTOOL = MIXING_VIRTUAL_TOOLS - 1
+    };
+    static_assert(MIXING_VIRTUAL_TOOLS >= 3, "The A30T mixer needs one fixed mix and two template mixes.");
+
     enum UserMessageCode {
         NoFilament = 0,
         SdRemoved = 1,

@@ -51,10 +51,9 @@ namespace Geeetech
             return;
         }
 
-        mixer.collector[0] = mix[0];
-        mixer.collector[1] = mix[1];
-        mixer.collector[2] = mix[2];
-        mixer.normalize();
+        MIXER_STEPPER_LOOP(i) mixer.collector[i] = mix[i];
+        mixer.normalize(FIXED_MIX_VTOOL);
+        mixer.T(FIXED_MIX_VTOOL);
         #if ENABLED(GRADIENT_MIX)
           if (mixingMode == (uint16_t(3) << 8))
             mixer.refresh_gradient();

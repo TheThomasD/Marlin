@@ -21,21 +21,34 @@ using namespace ExtUI;
 namespace Geeetech {
 
   void TouchDisplay::handle_M2138_SetMixingMode(const UiCommand &command) {
-    const char mode = command.parameters[S].charAt(0);
-    if (mode != '0' && mode != '1' && mode != '3') {
+    const String &modeParameter = command.parameters[S];
+    const char mode = modeParameter.charAt(0);
+    if (!modeParameter.length() || (mode != '0' && mode != '1' && mode != '3') || modeParameter.length() != 1) {
       #ifdef GEEETECH_DISPLAY_DEBUG
         SERIAL_ECHOLNPGM("Unsupported M2138 mixing mode: ", mode);
       #endif
       return;
     }
 
-    // The display protocol encodes its mode in the high byte of the L22 value.
     mixingMode = uint16_t(mode - '0') << 8;
     #if ENABLED(GRADIENT_MIX)
-      if (mode == '3')
+      if (mode == '3') {
+        mixer.T(TEMPLATE_START_VTOOL);
         mixer.refresh_gradient();
-      else
+      }
+      else {
+        mixer.T(FIXED_MIX_VTOOL);
         mixer.gradient.enabled = false;
+      }
+    #else
+      if (mode == '3') {
+        #ifdef GEEETECH_DISPLAY_DEBUG
+          SERIAL_ECHOLNPGM("Gradient mixing is not enabled");
+        #endif
+        mixingMode = 0;
+        return;
+      }
+      mixer.T(FIXED_MIX_VTOOL);
     #endif
     mixerStatusPending = true;
   }
